@@ -1,5 +1,3 @@
-// === modules/performanceUiModule.js (Phiên bản Hoàn chỉnh, Sửa lỗi) ===
-
 import { getAllEmployees } from './employeeDbModule.js';
 import { addReview, getPerformanceStats } from './performanceModule.js';
 

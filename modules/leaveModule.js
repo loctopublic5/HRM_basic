@@ -1,5 +1,3 @@
-// === modules/leaveModule.js ===
-
 const LEAVE_STORAGE_KEY = 'hrm_leave_requests';
 const DEFAULT_ANNUAL_LEAVE_DAYS = 15; // Giả sử mỗi nhân viên có 15 ngày phép năm
 

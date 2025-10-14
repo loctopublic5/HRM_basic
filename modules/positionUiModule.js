@@ -1,5 +1,3 @@
-// === modules/positionUiModule.js (Phiên bản có Phân trang) ===
-
 import { getAllDepartments } from './departmentModule.js';
 import { 
     getAllPositions, 

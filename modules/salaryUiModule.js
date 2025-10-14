@@ -1,5 +1,3 @@
-// === modules/salaryUiModule.js ===
-
 import { getAllEmployees, getEmployeeById } from './employeeDbModule.js';
 import { getPositionById } from './positionModule.js';
 import { addAdjustment, getAdjustmentsForEmployee } from './salaryModule.js';

@@ -1,5 +1,3 @@
-// === modules/leaveUiModule.js (Phiên bản Hoàn chỉnh) ===
-
 import { getAllEmployees } from './employeeDbModule.js';
 import { addLeaveRequest, getAllLeaveRequests, updateLeaveStatus, getLeaveBalance } from './leaveModule.js';
 

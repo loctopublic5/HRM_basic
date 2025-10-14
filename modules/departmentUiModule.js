@@ -1,5 +1,3 @@
-// === modules/departmentUiModule.js ===
-
 import { getPositionsByDepartmentId } from './positionModule.js';
 import { 
     getAllDepartments, 

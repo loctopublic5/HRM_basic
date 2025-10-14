@@ -1,6 +1,3 @@
-// === modules/employeeDbModule.js ===
-
-// Sử dụng một hằng số cho key của localStorage để tránh lỗi gõ sai
 const EMPLOYEES_STORAGE_KEY = 'hrm_employees';
 
 // Dữ liệu mẫu để khởi tạo nếu localStorage trống

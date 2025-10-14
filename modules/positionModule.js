@@ -1,5 +1,3 @@
-// === modules/positionModule.js ===
-
 const POSITIONS_STORAGE_KEY = 'hrm_positions';
 
 // Dữ liệu mẫu chuẩn, mỗi vị trí có liên kết 'departmentId' rõ ràng

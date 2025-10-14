@@ -1,5 +1,3 @@
-// === modules/attendanceModule.js ===
-
 const ATTENDANCE_STORAGE_KEY = 'hrm_attendance';
 
 // === CÁC HÀM TIỆN ÍCH VỀ THỜI GIAN ===

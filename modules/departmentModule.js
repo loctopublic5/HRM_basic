@@ -1,5 +1,3 @@
-// === modules/departmentModule.js ===
-
 const DEPARTMENTS_STORAGE_KEY = 'hrm_departments';
 
 const mockDepartments = [

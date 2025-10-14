@@ -1,5 +1,3 @@
-// === modules/employeeManagementModule.js ===
-
 import { getAllDepartments } from './departmentModule.js';
 import { getAllPositions, getPositionById, getPositionsByDepartmentId } from './positionModule.js';
 import { 

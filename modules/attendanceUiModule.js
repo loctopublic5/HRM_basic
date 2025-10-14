@@ -1,5 +1,3 @@
-// === modules/attendanceUiModule.js (Phiên bản có Phân trang) ===
-
 import { getAllEmployees } from './employeeDbModule.js';
 import { checkIn, checkOut, getTodaysAttendanceForEmployee, calculateWorkHours } from './attendanceModule.js';
 
