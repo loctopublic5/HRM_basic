@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý chấm công</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-view">
+        <div class="login-container">
+            <h2>Đăng nhập HRM</h2>
+            <form id="my-unique-login-form">
+                <input type="text" name="username" placeholder="Tên đăng nhập (admin)" required>
+                <input type="password" name="password" placeholder="Mật khẩu (password123)" required>
+                <button type="submit">Đăng nhập</button>
+                <p id="login-error" class="error-message"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="app" style="display: none;">
+        <header class="app-header">
+            <h1>HRM Dashboard</h1>
+            <button id="logout-btn">Đăng xuất</button> </header>
+
+        <div class="dashboard-container">
+            <nav id="sidebar-nav" class="sidebar">
+                <h2>Menu</h2>
+                <ul>
+                    <li><a href="#" data-module="employeeManagement">Quản lý Nhân viên</a></li>
+                    <li><a href="#" data-module="manageDepartments">Quản lý Phòng ban</a></li>
+                    <li><a href="#" data-module="managePositions">Quản lý Vị trí</a></li>
+                    <li><a href="#" data-module="attendance">Chấm công</a></li>
+                    <li><a href="#" data-module="salaryManagement">Quản lý Lương</a></li>
+                    <li><a href="#" data-module="leaveManagement">Quản lý nghỉ phép</a></li>
+                    <li><a href="#" data-module="performanceManagement">Quản lý hiệu suất</a></li>
+                </ul>
+            </nav>
+
+            <main id="main-content" class="content">
+                </main>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
