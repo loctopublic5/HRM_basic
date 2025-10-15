@@ -8,6 +8,7 @@ import * as SalaryUI from './modules/salaryUiModule.js';
 import * as LeaveUI from './modules/leaveUiModule.js';
 import * as PerformanceUI from './modules/performanceUiModule.js';
 
+
 let loginView, appContainer, mainContent; 
 
 /**
@@ -72,7 +73,7 @@ function setupDashboard() {
     const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
     const userMenuBtn = document.getElementById('user-menu-btn');
     const userMenuDropdown = document.getElementById('user-menu-dropdown');
-    const logoutBtn = document.getElementById('logout-btn');
+    const sidebarLogoutBtn = document.getElementById('sidebar-logout-btn');
     const sidebarToggle = document.getElementById('sidebar-toggle');
 
     // Gắn sự kiện cho các link điều hướng
@@ -92,18 +93,38 @@ function setupDashboard() {
     });
 
     // Gắn sự kiện cho nút đăng xuất
-    logoutBtn.addEventListener('click', () => {
-        Auth.logout();
-        initializeApp();
-    });
+    
+    if (sidebarLogoutBtn) {
+        sidebarLogoutBtn.addEventListener('click', () => {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                Auth.logout();
+                initializeApp();
+            }
+        });
+    }
 
     // Gắn sự kiện cho nút thu gọn sidebar
     if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', () => {
-            appContainer.classList.toggle('sidebar-collapsed');
-            const isCollapsed = appContainer.classList.contains('sidebar-collapsed');
-            sidebarToggle.querySelector('span').textContent = isCollapsed ? '' : 'Thu gọn';
-        });
+    sidebarToggle.addEventListener('click', () => {
+        appContainer.classList.toggle('sidebar-collapsed');
+        const isCollapsed = appContainer.classList.contains('sidebar-collapsed');
+        
+        // Tìm icon và span bên trong nút
+        const icon = sidebarToggle.querySelector('i');
+        const text = sidebarToggle.querySelector('span');
+
+        if (isCollapsed) {
+            // Khi đã thu gọn: Ẩn chữ, đổi icon thành mũi tên sang phải
+            text.style.display = 'none'; // Hoặc bạn có thể dùng CSS như đã làm
+            icon.classList.remove('fa-angles-left');
+            icon.classList.add('fa-angles-right');
+        } else {
+            // Khi mở rộng: Hiện lại chữ, đổi icon về mũi tên sang trái
+            text.style.display = 'inline';
+            icon.classList.remove('fa-angles-right');
+            icon.classList.add('fa-angles-left');
+        }
+    });
     }
 }
 
