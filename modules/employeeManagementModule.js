@@ -7,6 +7,7 @@ import {
     updateEmployee,
     deleteEmployee
 } from './employeeDbModule.js';
+import { renderPagination, handlePaginationClick } from './paginationComponent.js';
 
 // --- Biến trạng thái của module ---
 let isEditing = false;
@@ -51,16 +52,13 @@ function renderTable() {
     const positionMap = positions.reduce((map, pos) => ({ ...map, [pos.id]: pos }), {});
 
     const totalPages = Math.ceil(allEmployees.length / ITEMS_PER_PAGE);
+    
+    // --- PHẦN LOGIC BỊ THIẾU NẰM Ở ĐÂY ---
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedEmployees = allEmployees.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-    const paginationHtml = `
-        <div class="pagination">
-            <button data-action="prev" ${currentPage === 1 ? 'disabled' : ''}>Trang trước</button>
-            <span>Trang ${currentPage} / ${totalPages > 0 ? totalPages : 1}</span>
-            <button data-action="next" ${currentPage >= totalPages ? 'disabled' : ''}>Trang sau</button>
-        </div>
-    `;
+    // Sử dụng component renderPagination
+    const paginationHtml = renderPagination(currentPage, totalPages);
 
     tableContainer.innerHTML = `
         <table id="employee-table">
@@ -140,18 +138,11 @@ function bindMainEvents() {
             }
         }
         
-        if (event.target.closest('.pagination')) {
-            const action = event.target.dataset.action;
-            const totalPages = Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE);
-            if (action === 'prev' && currentPage > 1) {
-                currentPage--;
-                renderTable();
-            }
-            if (action === 'next' && currentPage < totalPages) {
-                currentPage++;
-                renderTable();
-            }
-        }
+        const totalPages = Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE);
+handlePaginationClick(event, { currentPage, totalPages }, (newPage) => {
+    currentPage = newPage;
+    renderTable();
+});
     });
 }
 
