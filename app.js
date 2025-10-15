@@ -8,10 +8,7 @@ import * as SalaryUI from './modules/salaryUiModule.js';
 import * as LeaveUI from './modules/leaveUiModule.js';
 import * as PerformanceUI from './modules/performanceUiModule.js';
 
-// --- Lấy các Element chính ---
-const loginView = document.getElementById('login-view');
-const appContainer = document.getElementById('app');
-const mainContent = document.getElementById('main-content');
+let loginView, appContainer, mainContent; 
 
 /**
  * Hàm "gác cổng" chính của ứng dụng.
@@ -19,7 +16,7 @@ const mainContent = document.getElementById('main-content');
 function initializeApp() {
     if (Auth.isLoggedIn()) {
         loginView.style.display = 'none';
-        appContainer.style.display = 'flex';
+        appContainer.style.display = 'grid'; 
         setupDashboard();
         navigate('employeeManagement');
     } else {
@@ -33,7 +30,7 @@ function initializeApp() {
  * Cài đặt các event listener cho form đăng nhập.
  */
 function setupLoginForm() {
-    const loginForm = document.getElementById('my-unique-login-form');
+    const loginForm = document.getElementById('login-form');
     console.log('Tìm thấy form đăng nhập:', loginForm); 
     if (!loginForm) return;
 
@@ -163,5 +160,10 @@ window.addEventListener('click', () => {
 // --- Tải module mặc định khi vào trang ---
 window.addEventListener('DOMContentLoaded', () => {
     console.log('DOM đã sẵn sàng, bắt đầu khởi chạy ứng dụng!');
+
+    loginView = document.getElementById('login-view');
+    appContainer = document.getElementById('app');
+    mainContent = document.getElementById('main-content');
+
     initializeApp();
 });
