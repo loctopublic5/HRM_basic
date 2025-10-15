@@ -72,21 +72,42 @@ function setupLoginForm() {
  * Cài đặt các event listener cho dashboard (menu, nút logout).
  */
 function setupDashboard() {
-    const navLinks = document.querySelectorAll('#sidebar-nav a'); // Biến navLinks được khai báo an toàn ở đây
+    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+    const userMenuBtn = document.getElementById('user-menu-btn');
+    const userMenuDropdown = document.getElementById('user-menu-dropdown');
     const logoutBtn = document.getElementById('logout-btn');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
 
+    // Gắn sự kiện cho các link điều hướng
     navLinks.forEach(link => {
         link.addEventListener('click', (event) => {
             event.preventDefault();
-            const moduleName = event.target.dataset.module;
+            // dùng .closest('a') để đảm bảo luôn lấy đúng thẻ a dù click vào icon hay text
+            const moduleName = event.target.closest('a').dataset.module;
             navigate(moduleName);
         });
     });
 
+    // Gắn sự kiện cho menu người dùng
+    userMenuBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        userMenuDropdown.classList.toggle('active');
+    });
+
+    // Gắn sự kiện cho nút đăng xuất
     logoutBtn.addEventListener('click', () => {
         Auth.logout();
         initializeApp();
     });
+
+    // Gắn sự kiện cho nút thu gọn sidebar
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            appContainer.classList.toggle('sidebar-collapsed');
+            const isCollapsed = appContainer.classList.contains('sidebar-collapsed');
+            sidebarToggle.querySelector('span').textContent = isCollapsed ? '' : 'Thu gọn';
+        });
+    }
 }
 
 /**
@@ -96,6 +117,13 @@ function setupDashboard() {
 
 // --- Hàm xử lý điều hướng ---
 function navigate(module) {
+    const allLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+    allLinks.forEach(link => link.classList.remove('active'));
+
+    const activeLink = document.querySelector(`.sidebar-nav a[data-module="${module}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
     switch (module) {
         case 'employeeManagement':
             EmployeeManagementUI.render(mainContent);
@@ -124,6 +152,13 @@ function navigate(module) {
     }
 }
 
+// Đóng dropdown khi click ra ngoài window
+window.addEventListener('click', () => {
+    const userMenuDropdown = document.getElementById('user-menu-dropdown');
+    if (userMenuDropdown && userMenuDropdown.classList.contains('active')) {
+        userMenuDropdown.classList.remove('active');
+    }
+});
 
 // --- Tải module mặc định khi vào trang ---
 window.addEventListener('DOMContentLoaded', () => {

@@ -3,43 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý chấm công</title>
+    <title>HRM Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 <body>
     <div id="login-view">
-        <div class="login-container">
-            <h2>Đăng nhập HRM</h2>
-            <form id="my-unique-login-form">
-                <input type="text" name="username" placeholder="Tên đăng nhập (admin)" required>
-                <input type="password" name="password" placeholder="Mật khẩu (password123)" required>
-                <button type="submit">Đăng nhập</button>
-                <p id="login-error" class="error-message"></p>
-            </form>
-        </div>
+        <form id="login-form"> <h2>Đăng nhập HRM</h2>
+            <input type="text" name="username" placeholder="Tên đăng nhập (admin)" required>
+            <input type="password" name="password" placeholder="Mật khẩu (password123)" required>
+            <button type="submit">Đăng nhập</button>
+            <p id="login-error" class="error-message"></p>
+        </form>
     </div>
 
     <div id="app" style="display: none;">
-        <header class="app-header">
-            <h1>HRM Dashboard</h1>
-            <button id="logout-btn">Đăng xuất</button> </header>
-
-        <div class="dashboard-container">
-            <nav id="sidebar-nav" class="sidebar">
-                <h2>Menu</h2>
-                <ul>
-                    <li><a href="#" data-module="employeeManagement">Quản lý Nhân viên</a></li>
-                    <li><a href="#" data-module="manageDepartments">Quản lý Phòng ban</a></li>
-                    <li><a href="#" data-module="managePositions">Quản lý Vị trí</a></li>
-                    <li><a href="#" data-module="attendance">Chấm công</a></li>
-                    <li><a href="#" data-module="salaryManagement">Quản lý Lương</a></li>
-                    <li><a href="#" data-module="leaveManagement">Quản lý nghỉ phép</a></li>
-                    <li><a href="#" data-module="performanceManagement">Quản lý hiệu suất</a></li>
-                </ul>
+        <aside id="sidebar">
+            <div class="sidebar-header">
+                <h3 class="sidebar-title">HRM App</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" data-module="employeeManagement" class="nav-link"><i class="fa-solid fa-users"></i> <span>Quản lý Nhân viên</span></a>
+                <a href="#" data-module="manageDepartments" class="nav-link"><i class="fa-solid fa-building"></i> <span>Quản lý Phòng ban</span></a>
+                <a href="#" data-module="managePositions" class="nav-link"><i class="fa-solid fa-briefcase"></i> <span>Quản lý Vị trí</span></a>
+                <a href="#" data-module="attendance" class="nav-link"><i class="fa-solid fa-clock"></i> <span>Chấm công</span></a>
+                <a href="#" data-module="salaryManagement" class="nav-link"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Quản lý Lương</span></a>
+                <a href="#" data-module="leaveManagement" class="nav-link"><i class="fa-solid fa-calendar-alt"></i> <span>Quản lý nghỉ phép</span></a>
+                <a href="#" data-module="performanceManagement" class="nav-link"><i class="fa-solid fa-chart-line"></i> <span>Quản lý hiệu suất</span></a>
             </nav>
+            <div class="sidebar-footer">
+                <button id="sidebar-toggle"><i class="fa-solid fa-angles-left"></i> <span>Thu gọn</span></button>
+            </div>
+        </aside>
 
-            <main id="main-content" class="content">
-                </main>
+        <div class="main-content-wrapper">
+            <header id="app-header">
+                <div id="breadcrumbs"></div>
+                <div class="user-menu">
+                    <button id="user-menu-btn">Chào, Admin <i class="fa-solid fa-caret-down"></i></button>
+                    <div id="user-menu-dropdown" class="user-menu-dropdown">
+                        <a href="#" id="logout-btn">Đăng xuất</a>
+                    </div>
+                </div>
+            </header>
+            <main id="main-content"></main>
         </div>
     </div>
 
