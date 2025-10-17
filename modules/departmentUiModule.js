@@ -49,8 +49,8 @@ function renderPageContent(container) {
                         <td>${dept.id}</td>
                         <td>${dept.name}</td>
                         <td class="actions">
-                            <button class="edit-btn" data-id="${dept.id}">Sửa</button>
-                            <button class="delete-btn" data-id="${dept.id}">Xóa</button>
+                            <button class="dpt_edit-btn" data-id="${dept.id}">Sửa</button>
+                            <button class="dpt_delete-btn" data-id="${dept.id}">Xóa</button>
                         </td>
                     </tr>
                 `).join('')}
@@ -85,7 +85,7 @@ function render(container) {
             const target = event.target;
             
             // Xử lý nút Sửa/Xóa
-            const editBtn = target.closest('.edit-btn');
+            const editBtn = target.closest('.dpt_edit-btn');
             if (editBtn) {
                 const departmentId = editBtn.dataset.id;
                 const currentName = editBtn.closest('tr').children[1].textContent;
@@ -97,7 +97,7 @@ function render(container) {
                 return;
             }
 
-            const deleteBtn = target.closest('.delete-btn');
+            const deleteBtn = target.closest('.dpt_delete-btn');
             if (deleteBtn) {
                 const departmentId = deleteBtn.dataset.id;
                 const relatedPositions = getPositionsByDepartmentId(departmentId);

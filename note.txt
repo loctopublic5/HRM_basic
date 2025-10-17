@@ -1,0 +1,4 @@
+_TASK1: KIểm tra valid cho tất các các form input, ở phần xoá thêm isactive để bảo toàn dữ liệu
+_TASK2: Nâng cao: tạo option setting cho người dùng kiểm tra valid theo điều kiện 
+_TASK3: Châm công thực tế hơn ( nghiên cứu thêm)
+_TASK4: Phòng ban thêm chi tiết đó là tìm dược nhân viên ở phong ban hay cả ở vị trí làm việc nào trong phòng ban
