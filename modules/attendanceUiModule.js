@@ -1,31 +1,27 @@
-// === modules/attendanceUiModule.js (Phiên bản có Phân trang) ===
+// === modules/attendanceUiModule.js (Phiên bản Hoàn chỉnh, có Phân trang) ===
 
 import { getAllEmployees } from './employeeDbModule.js';
 import { checkIn, checkOut, getTodaysAttendanceForEmployee, calculateWorkHours } from './attendanceModule.js';
+import { renderPagination, handlePaginationClick } from './paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO PHÂN TRANG ---
 let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 
 /**
- * Hàm này CHỈ làm nhiệm vụ vẽ lại nội dung bảng và các nút phân trang.
+ * Hàm này CHỈ làm nhiệm vụ vẽ lại nội dung động của trang.
  * @param {HTMLElement} container 
  */
 function renderAttendancePage(container) {
     const allEmployees = getAllEmployees();
 
-    // --- LOGIC PHÂN TRANG ---
-    const totalPages = Math.ceil(allEmployees.length / ITEMS_PER_PAGE);
+    // --- LOGIC PHÂN TRANG (ĐÃ SỬA LỖI) ---
+    const totalPages = Math.ceil(allEmployees.length / ITEMS_PER_PAGE) || 1;
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    // Sửa lỗi: Cắt mảng với chỉ số bắt đầu và kết thúc
     const paginatedEmployees = allEmployees.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-    const paginationHtml = `
-        <div class="pagination">
-            <button data-action="prev" ${currentPage === 1 ? 'disabled' : ''}>Trang trước</button>
-            <span>Trang ${currentPage} / ${totalPages > 0 ? totalPages : 1}</span>
-            <button data-action="next" ${currentPage >= totalPages ? 'disabled' : ''}>Trang sau</button>
-        </div>
-    `;
+    const paginationHtml = renderPagination(currentPage, totalPages);
 
     container.innerHTML = `
         <div class="page-header">
@@ -74,51 +70,41 @@ function renderAttendancePage(container) {
                 }).join('')}
             </tbody>
         </table>
-        ${totalPages > 1 ? paginationHtml : ''}
+        ${paginationHtml}
     `;
 }
 
 /**
- * Hàm render chính, tạo layout và gắn sự kiện một lần duy nhất.
+ * Hàm render chính, chịu trách nhiệm gắn sự kiện một lần duy nhất.
  * @param {HTMLElement} container 
  */
 function render(container) {
-    // Gắn sự kiện MỘT LẦN DUY NHẤT bằng Event Delegation trên container chính
     if (!container.dataset.attendanceEventsAttached) {
         container.addEventListener('click', (event) => {
-            const target = event.target;
-            
             // Xử lý nút check-in/check-out
-            const actionButton = target.closest('.action-btn');
-            if (actionButton) {
+            const actionButton = event.target.closest('.action-btn');
+            if (actionButton && actionButton.dataset.employeeId) {
                 const employeeId = actionButton.dataset.employeeId;
                 const action = actionButton.dataset.action;
                 let success = false;
                 if (action === 'check-in') success = checkIn(employeeId);
                 if (action === 'check-out') success = checkOut(employeeId);
-                if (success) renderAttendancePage(container); // Vẽ lại nội dung
-                return; // Dừng lại sau khi xử lý
+                if (success) renderAttendancePage(container);
+                return;
             }
 
             // Xử lý nút phân trang
-            const paginationButton = target.closest('.pagination button');
-            if (paginationButton) {
-                const action = paginationButton.dataset.action;
-                const totalPages = Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE);
-                if (action === 'prev' && currentPage > 1) {
-                    currentPage--;
-                    renderAttendancePage(container);
-                }
-                if (action === 'next' && currentPage < totalPages) {
-                    currentPage++;
-                    renderAttendancePage(container);
-                }
-            }
+            handlePaginationClick(event, { 
+                currentPage, 
+                totalPages: Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE) || 1
+            }, (newPage) => {
+                currentPage = newPage;
+                renderAttendancePage(container); // SỬA LỖI: Gọi đúng hàm render nội dung
+            });
         });
         container.dataset.attendanceEventsAttached = 'true';
     }
 
-    // Luôn render nội dung khi hàm được gọi
     renderAttendancePage(container);
 }
 

@@ -1,7 +1,6 @@
-// === modules/leaveUiModule.js (Phiên bản Hoàn chỉnh) ===
-
 import { getAllEmployees } from './employeeDbModule.js';
 import { addLeaveRequest, getAllLeaveRequests, updateLeaveStatus, getLeaveBalance } from './leaveModule.js';
+import { renderPagination, handlePaginationClick } from './paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO PHÂN TRANG ---
 let currentPage = 1;
@@ -15,17 +14,11 @@ function renderPageContent(container) {
     const employees = getAllEmployees();
     const allRequests = getAllLeaveRequests();
 
-    // --- LOGIC PHÂN TRANG ---
-    const totalPages = Math.ceil(allRequests.length / ITEMS_PER_PAGE);
-    const paginatedRequests = allRequests.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(allRequests.length / ITEMS_PER_PAGE) || 1;
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedRequests = allRequests.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-    const paginationHtml = `
-        <div class="pagination">
-            <button data-action="prev" ${currentPage === 1 ? 'disabled' : ''}>Trang trước</button>
-            <span>Trang ${currentPage} / ${totalPages > 0 ? totalPages : 1}</span>
-            <button data-action="next" ${currentPage >= totalPages ? 'disabled' : ''}>Trang sau</button>
-        </div>
-    `;
+    const paginationHtml = renderPagination(currentPage, totalPages);
 
     container.innerHTML = `
         <div class="page-header"><h2>Quản lý Nghỉ phép</h2></div>
@@ -55,11 +48,11 @@ function renderPageContent(container) {
                 <tr><th>Nhân viên</th><th>Thời gian nghỉ</th><th>Loại</th><th>Trạng thái</th><th>Hành động</th></tr>
             </thead>
             <tbody>
-                ${paginatedRequests.map(req => {
+                ${paginatedRequests.map(req => { 
                     const employee = employees.find(emp => emp.id === req.employeeId);
                     const actionsHtml = req.status === 'pending'
                         ? `<button class="approve-btn" data-leave-id="${req.id}">Duyệt</button>
-                           <button class="reject-btn" data-leave-id="${req.id}">Từ chối</button>`
+                        <button class="reject-btn" data-leave-id="${req.id}">Từ chối</button>`
                         : '<span>-</span>';
                     return `
                         <tr>
@@ -73,20 +66,22 @@ function renderPageContent(container) {
                 }).join('')}
             </tbody>
         </table>
-        ${totalPages > 1 ? paginationHtml : ''}
+        ${paginationHtml}
     `;
 
     // Cập nhật lại listener cho dropdown nhân viên mỗi khi render
     const employeeSelect = container.querySelector('select[name="employeeId"]');
-    const balanceDisplay = document.getElementById('leave-balance-display');
-    employeeSelect.addEventListener('change', () => {
-        const selectedEmployeeId = employeeSelect.value;
-        if (selectedEmployeeId) {
-            balanceDisplay.textContent = `${getLeaveBalance(selectedEmployeeId)} ngày`;
-        } else {
-            balanceDisplay.textContent = '—';
-        }
-    });
+    if (employeeSelect) {
+        employeeSelect.addEventListener('change', () => {
+            const balanceDisplay = document.getElementById('leave-balance-display');
+            const selectedEmployeeId = employeeSelect.value;
+            if (selectedEmployeeId) {
+                balanceDisplay.textContent = `${getLeaveBalance(selectedEmployeeId)} ngày`;
+            } else {
+                balanceDisplay.textContent = '—';
+            }
+        });
+    }
 }
 
 /**
@@ -101,7 +96,6 @@ function render(container) {
                 const formData = new FormData(event.target);
                 const requestData = Object.fromEntries(formData.entries());
                 if (addLeaveRequest(requestData)) {
-                    // Chuyển về trang 1 để xem yêu cầu mới nhất
                     currentPage = 1;
                     renderPageContent(container);
                 }
@@ -111,7 +105,6 @@ function render(container) {
         container.addEventListener('click', event => {
             const target = event.target;
             
-            // Xử lý nút Duyệt/Từ chối
             const leaveId = target.dataset.leaveId;
             if (leaveId) {
                 let success = false;
@@ -121,21 +114,16 @@ function render(container) {
                 return;
             }
 
-            // Xử lý nút Phân trang
-            const paginationButton = target.closest('.pagination button');
-            if (paginationButton) {
-                const action = paginationButton.dataset.action;
-                const totalPages = Math.ceil(getAllLeaveRequests().length / ITEMS_PER_PAGE);
-                if (action === 'prev' && currentPage > 1) currentPage--;
-                if (action === 'next' && currentPage < totalPages) currentPage++;
+            const totalPages = Math.ceil(getAllLeaveRequests().length / ITEMS_PER_PAGE) || 1;
+            handlePaginationClick(event, { currentPage, totalPages }, (newPage) => {
+                currentPage = newPage;
                 renderPageContent(container);
-            }
+            });
         });
 
         container.dataset.leaveEventsAttached = 'true';
     }
 
-    // Luôn gọi hàm vẽ nội dung
     renderPageContent(container);
 }
 

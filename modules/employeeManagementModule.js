@@ -1,5 +1,3 @@
-// === modules/employeeManagementModule.js ===
-
 import { getAllDepartments } from './departmentModule.js';
 import { getAllPositions, getPositionById, getPositionsByDepartmentId } from './positionModule.js';
 import { 
@@ -9,6 +7,7 @@ import {
     updateEmployee,
     deleteEmployee
 } from './employeeDbModule.js';
+import { renderPagination, handlePaginationClick } from './paginationComponent.js';
 
 // --- Biến trạng thái của module ---
 let isEditing = false;
@@ -53,16 +52,12 @@ function renderTable() {
     const positionMap = positions.reduce((map, pos) => ({ ...map, [pos.id]: pos }), {});
 
     const totalPages = Math.ceil(allEmployees.length / ITEMS_PER_PAGE);
+    
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedEmployees = allEmployees.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-    const paginationHtml = `
-        <div class="pagination">
-            <button data-action="prev" ${currentPage === 1 ? 'disabled' : ''}>Trang trước</button>
-            <span>Trang ${currentPage} / ${totalPages > 0 ? totalPages : 1}</span>
-            <button data-action="next" ${currentPage >= totalPages ? 'disabled' : ''}>Trang sau</button>
-        </div>
-    `;
+    // Sử dụng component renderPagination
+    const paginationHtml = renderPagination(currentPage, totalPages);
 
     tableContainer.innerHTML = `
         <table id="employee-table">
@@ -78,7 +73,7 @@ function renderTable() {
             </thead>
             <tbody>
                 ${paginatedEmployees.map(emp => {
-                    // --- LOGIC TÍNH LƯƠNG MỚI ---
+                    // --- LOGIC TÍNH LƯƠNG  ---
                     const position = positionMap[emp.positionId];
                     const salaryBase = position ? position.salaryBase : 0;
                     const allowance = emp.permanentAllowance || 0;
@@ -142,18 +137,11 @@ function bindMainEvents() {
             }
         }
         
-        if (event.target.closest('.pagination')) {
-            const action = event.target.dataset.action;
-            const totalPages = Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE);
-            if (action === 'prev' && currentPage > 1) {
-                currentPage--;
-                renderTable();
-            }
-            if (action === 'next' && currentPage < totalPages) {
-                currentPage++;
-                renderTable();
-            }
-        }
+        const totalPages = Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE);
+handlePaginationClick(event, { currentPage, totalPages }, (newPage) => {
+    currentPage = newPage;
+    renderTable();
+});
     });
 }
 
@@ -201,7 +189,6 @@ function openFormModal(employeeId = null) {
     const positionSelect = modalBody.querySelector('select[name="positionId"]');
     const salaryDisplay = document.getElementById('salary-base-display');
 
-    // --- LOGIC MỚI ĐÃ ĐƯỢC TÁCH BIỆT ---
 
     // Hàm 1: Chỉ cập nhật hiển thị lương
     function updateSalaryDisplay() {
@@ -234,7 +221,7 @@ function openFormModal(employeeId = null) {
         updateSalaryDisplay();
     }
     
-    // --- GẮN SỰ KIỆN THEO LOGIC MỚI ---
+    // --- GẮN SỰ KIỆN THEO LOGIC ---
     departmentSelect.addEventListener('change', updatePositionOptions);
     positionSelect.addEventListener('change', updateSalaryDisplay);
 
@@ -253,7 +240,6 @@ function closeFormModal() {
 function handleFormSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
-    // Không còn lấy 'salary' từ form nữa
     const employeeData = {
         name: formData.get('name'),
         hireDate: formData.get('hireDate'),
@@ -265,13 +251,12 @@ function handleFormSubmit(event) {
         updateEmployee(currentEmployeeId, employeeData);
     } else {
         addEmployee(employeeData);
-        // Cập nhật lại currentPage để xem nhân viên mới
         const totalEmployees = getAllEmployees().length;
         currentPage = Math.ceil(totalEmployees / ITEMS_PER_PAGE);
     }
 
     closeFormModal();
-    renderTable(); // Cập nhật lại bảng
+    renderTable(); 
 }
 
 export { render };

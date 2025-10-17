@@ -1,5 +1,3 @@
-// === modules/salaryModule.js (Phiên bản mới) ===
-
 import { updateEmployeeAllowance } from './employeeDbModule.js';
 
 

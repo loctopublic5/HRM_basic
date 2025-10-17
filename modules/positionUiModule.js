@@ -1,5 +1,3 @@
-// === modules/positionUiModule.js (Phiên bản có Phân trang) ===
-
 import { getAllDepartments } from './departmentModule.js';
 import { 
     getAllPositions, 
@@ -7,21 +5,26 @@ import {
     updatePosition,
     deletePosition
 } from './positionModule.js';
+import { renderPagination, handlePaginationClick } from './paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let isEditing = false;
 let currentPositionId = null;
 let currentPage = 1;
-const ITEMS_PER_PAGE = 5; // 5 vị trí mỗi trang
+const ITEMS_PER_PAGE = 5;
 
-function render(container) {
+/**
+ * HÀM NỘI BỘ: Chỉ làm nhiệm vụ vẽ lại nội dung động.
+ * @param {HTMLElement} container 
+ */
+function renderPageContent(container) {
     const allPositions = getAllPositions();
     const departments = getAllDepartments();
     const departmentMap = departments.reduce((map, dept) => ({...map, [dept.id]: dept.name}), {});
 
-    // --- LOGIC PHÂN TRANG ---
-    const totalPages = Math.ceil(allPositions.length / ITEMS_PER_PAGE);
-    const paginatedPositions = allPositions.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(allPositions.length / ITEMS_PER_PAGE) || 1;
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedPositions = allPositions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     const positionToEdit = isEditing ? allPositions.find(p => p.id === currentPositionId) : null;
     const departmentOptions = departments.map(dept => 
@@ -30,15 +33,8 @@ function render(container) {
         </option>`
     ).join('');
 
-    const paginationHtml = `
-        <div class="pagination">
-            <button data-action="prev" ${currentPage === 1 ? 'disabled' : ''}>Trang trước</button>
-            <span>Trang ${currentPage} / ${totalPages > 0 ? totalPages : 1}</span>
-            <button data-action="next" ${currentPage >= totalPages ? 'disabled' : ''}>Trang sau</button>
-        </div>
-    `;
+    const paginationHtml = renderPagination(currentPage, totalPages);
 
-    // --- HTML CHÍNH ---
     container.innerHTML = `
         <h2>${isEditing ? `Chỉnh sửa Vị trí: ${positionToEdit.title}` : 'Thêm Vị trí mới'}</h2>
         <form id="position-form">
@@ -75,54 +71,15 @@ function render(container) {
                 `).join('')}
             </tbody>
         </table>
-        ${totalPages > 1 ? paginationHtml : ''}
+        ${paginationHtml}
     `;
+}
 
-    // --- GẮN SỰ KIỆN (CHỈ 1 LẦN) ---
+/**
+ * @param {HTMLElement} container 
+ */
+function render(container) {
     if (!container.dataset.positionEventsAttached) {
-        container.addEventListener('click', (event) => {
-            const target = event.target;
-            
-            // Xử lý nút Sửa/Xóa
-            const editBtn = target.closest('.edit-btn');
-            if (editBtn) {
-                isEditing = true;
-                currentPositionId = editBtn.dataset.id;
-                render(container);
-                return;
-            }
-
-            const deleteBtn = target.closest('.delete-btn');
-            if (deleteBtn) {
-                if (confirm(`Bạn có chắc chắn muốn xóa vị trí có ID: ${deleteBtn.dataset.id}?`)) {
-                    deletePosition(deleteBtn.dataset.id);
-                    if (getAllPositions().slice((currentPage - 1) * ITEMS_PER_PAGE).length === 0 && currentPage > 1) {
-                        currentPage--;
-                    }
-                    render(container);
-                }
-                return;
-            }
-
-            // Xử lý nút Hủy
-            const cancelBtn = target.closest('#cancel-edit');
-            if (cancelBtn) {
-                isEditing = false;
-                currentPositionId = null;
-                render(container);
-                return;
-            }
-
-            // Xử lý nút Phân trang
-            const paginationBtn = target.closest('.pagination button');
-            if (paginationBtn) {
-                const action = paginationBtn.dataset.action;
-                if (action === 'prev') currentPage--;
-                if (action === 'next') currentPage++;
-                render(container);
-            }
-        });
-
         container.addEventListener('submit', event => {
             if (event.target.id === 'position-form') {
                 event.preventDefault();
@@ -144,12 +101,51 @@ function render(container) {
                 
                 isEditing = false;
                 currentPositionId = null;
-                render(container);
+                renderPageContent(container);
             }
+        });
+
+        container.addEventListener('click', (event) => {
+            const target = event.target;
+
+            const editBtn = target.closest('.edit-btn');
+            if (editBtn) {
+                isEditing = true;
+                currentPositionId = editBtn.dataset.id;
+                renderPageContent(container);
+                return;
+            }
+
+            const deleteBtn = target.closest('.delete-btn');
+            if (deleteBtn) {
+                if (confirm(`Bạn có chắc chắn muốn xóa vị trí có ID: ${deleteBtn.dataset.id}?`)) {
+                    deletePosition(deleteBtn.dataset.id);
+                    const newTotalPages = Math.ceil(getAllPositions().length / ITEMS_PER_PAGE) || 1;
+                    if (currentPage > newTotalPages) currentPage = newTotalPages;
+                    renderPageContent(container);
+                }
+                return;
+            }
+
+            const cancelBtn = target.closest('#cancel-edit');
+            if (cancelBtn) {
+                isEditing = false;
+                currentPositionId = null;
+                renderPageContent(container);
+                return;
+            }
+
+            const totalPages = Math.ceil(getAllPositions().length / ITEMS_PER_PAGE) || 1;
+            handlePaginationClick(event, { currentPage, totalPages }, (newPage) => {
+                currentPage = newPage;
+                renderPageContent(container);
+            });
         });
 
         container.dataset.positionEventsAttached = 'true';
     }
+
+    renderPageContent(container);
 }
 
 export { render };

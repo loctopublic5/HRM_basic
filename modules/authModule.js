@@ -1,5 +1,3 @@
-// === modules/authModule.js ===
-
 const USERS_STORAGE_KEY = 'hrm_users';
 const SESSION_STORAGE_KEY = 'hrm_session';
 

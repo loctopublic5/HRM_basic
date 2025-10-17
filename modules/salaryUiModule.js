@@ -1,41 +1,19 @@
-// === modules/salaryUiModule.js ===
-
 import { getAllEmployees, getEmployeeById } from './employeeDbModule.js';
 import { getPositionById } from './positionModule.js';
 import { addAdjustment, getAdjustmentsForEmployee } from './salaryModule.js';
 
 let selectedEmployeeId = null;
 
-function render(container) {
-    const employees = getAllEmployees();
-    
-    // Giao diện ban đầu: chỉ có dropdown chọn nhân viên
-    container.innerHTML = `
-        <div class="page-header">
-            <h2>Quản lý Điều chỉnh Lương</h2>
-        </div>
-        <div class="form-group">
-            <label for="employee-select">Chọn nhân viên:</label>
-            <select id="employee-select">
-                <option value="">-- Vui lòng chọn --</option>
-                ${employees.map(emp => `<option value="${emp.id}">${emp.name}</option>`).join('')}
-            </select>
-        </div>
-        <div id="salary-details-container"></div>
-    `;
-
-    const employeeSelect = document.getElementById('employee-select');
-    employeeSelect.addEventListener('change', () => {
-        selectedEmployeeId = employeeSelect.value;
-        if (selectedEmployeeId) {
-            renderSalaryDetails(document.getElementById('salary-details-container'));
-        } else {
-            document.getElementById('salary-details-container').innerHTML = '';
-        }
-    });
-}
-
+/**
+ * Hàm nội bộ, chỉ để vẽ lại phần chi tiết lương.
+ * @param {HTMLElement} container - Vùng div#salary-details-container
+ */
 function renderSalaryDetails(container) {
+    if (!selectedEmployeeId) {
+        container.innerHTML = '';
+        return;
+    }
+
     const employee = getEmployeeById(selectedEmployeeId);
     const position = getPositionById(employee.positionId);
     const adjustments = getAdjustmentsForEmployee(selectedEmployeeId);
@@ -76,19 +54,55 @@ function renderSalaryDetails(container) {
             </tbody>
         </table>
     `;
+}
 
-    document.getElementById('adjustment-form').addEventListener('submit', event => {
-        event.preventDefault();
-        const formData = new FormData(event.target);
-        addAdjustment({
-            employeeId: selectedEmployeeId,
-            type: formData.get('type'),
-            amount: formData.get('amount'),
-            description: formData.get('description'),
+/**
+ * Hàm render chính, điểm vào của module.
+ * @param {HTMLElement} container 
+ */
+function render(container) {
+    // Chỉ gắn sự kiện MỘT LẦN DUY NHẤT
+    if (!container.dataset.salaryEventsAttached) {
+        // Sử dụng Event Delegation cho toàn bộ module
+        container.addEventListener('change', event => {
+            if (event.target.id === 'employee-select') {
+                selectedEmployeeId = event.target.value;
+                renderSalaryDetails(container.querySelector('#salary-details-container'));
+            }
         });
-        // Render lại để cập nhật thông tin
-        renderSalaryDetails(container);
-    });
+
+        container.addEventListener('submit', event => {
+            if (event.target.id === 'adjustment-form') {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                addAdjustment({
+                    employeeId: selectedEmployeeId,
+                    type: formData.get('type'),
+                    amount: formData.get('amount'),
+                    description: formData.get('description'),
+                });
+                renderSalaryDetails(container.querySelector('#salary-details-container'));
+            }
+        });
+
+        container.dataset.salaryEventsAttached = 'true';
+    }
+
+    // Luôn vẽ lại layout chính khi được gọi
+    const employees = getAllEmployees();
+    container.innerHTML = `
+        <div class="page-header">
+            <h2>Quản lý Điều chỉnh Lương</h2>
+        </div>
+        <div class="form-group">
+            <label for="employee-select">Chọn nhân viên:</label>
+            <select id="employee-select">
+                <option value="">-- Vui lòng chọn --</option>
+                ${employees.map(emp => `<option value="${emp.id}">${emp.name}</option>`).join('')}
+            </select>
+        </div>
+        <div id="salary-details-container"></div>
+    `;
 }
 
 export { render };

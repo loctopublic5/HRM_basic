@@ -1,5 +1,3 @@
-// === modules/performanceModule.js ===
-
 const REVIEW_STORAGE_KEY = 'hrm_performance_reviews';
 
 export function getAllReviews() {

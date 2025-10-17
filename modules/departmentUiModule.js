@@ -1,4 +1,4 @@
-// === modules/departmentUiModule.js ===
+// === modules/departmentUiModule.js (Phiên bản Hoàn chỉnh, có Phân trang) ===
 
 import { getPositionsByDepartmentId } from './positionModule.js';
 import { 
@@ -7,32 +7,29 @@ import {
     updateDepartment,
     deleteDepartment 
 } from './departmentModule.js';
+import { renderPagination, handlePaginationClick } from './paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO PHÂN TRANG ---
 let currentPage = 1;
 const ITEMS_PER_PAGE = 5;
 
-function render(container) {
+/**
+ * HÀM NỘI BỘ: Chỉ làm nhiệm vụ vẽ lại nội dung động.
+ * @param {HTMLElement} container 
+ */
+function renderPageContent(container) {
     const allDepartments = getAllDepartments();
 
-    // --- LOGIC PHÂN TRANG ---
-    const totalPages = Math.ceil(allDepartments.length / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const paginatedDepartments = allDepartments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(allDepartments.length / ITEMS_PER_PAGE) || 1;
+    const paginatedDepartments = allDepartments.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
-    // --- HTML TỐI GIẢN CHO PHÂN TRANG ---
-    const paginationHtml = `
-        <div class="pagination">
-            <button data-action="prev" ${currentPage === 1 ? 'disabled' : ''}>Trang trước</button>
-            <span>Trang ${currentPage} / ${totalPages > 0 ? totalPages : 1}</span>
-            <button data-action="next" ${currentPage >= totalPages ? 'disabled' : ''}>Trang sau</button>
+    const paginationHtml = renderPagination(currentPage, totalPages);
+
+    container.innerHTML = `
+        <div class="page-header">
+            <h2>Quản lý Phòng ban</h2>
         </div>
-    `;
-
-    // HTML cho form thêm mới và bảng danh sách
-    const html = `
-        <h2>Quản lý Phòng ban</h2>
-        <form id="add-dept-form" class="small-form">
+        <form id="add-dept-form">
             <input type="text" id="new-dept-name" placeholder="Tên phòng ban mới" required>
             <button type="submit">Thêm mới</button>
         </form>
@@ -59,69 +56,79 @@ function render(container) {
                 `).join('')}
             </tbody>
         </table>
-        ${totalPages > 0 ? paginationHtml : ''}
+        ${paginationHtml}
     `;
-    container.innerHTML = html;
+}
 
-    // --- Xử lý sự kiện ---
-    const addForm = document.getElementById('add-dept-form');
-    const departmentsTable = document.getElementById('departments-table');
-    const paginationContainer = container.querySelector('.pagination');
-
-    addForm.addEventListener('submit', event => {
-        event.preventDefault();
-        const newNameInput = document.getElementById('new-dept-name');
-        const newName = newNameInput.value.trim();
-        if (newName) {
-            addDepartment(newName);
-            render(container);
-        }
-    });
-
-    departmentsTable.addEventListener('click', event => {
-        const target = event.target;
-        const departmentId = target.dataset.id;
-        if (!departmentId) return;
-
-        if (target.classList.contains('edit-btn')) {
-            const currentName = target.closest('tr').children[1].textContent;
-            const newName = prompt('Nhập tên mới cho phòng ban:', currentName);
-            if (newName && newName.trim() !== '') {
-                updateDepartment(departmentId, newName.trim());
-                render(container);
-            }
-        }
-
-        if (target.classList.contains('delete-btn')) {
-            const relatedPositions = getPositionsByDepartmentId(departmentId);
-            if (relatedPositions.length > 0) {
-                alert('Lỗi: Không thể xóa phòng ban này vì vẫn còn các vị trí công việc liên quan.');
-                return;
-            }
-            if (confirm(`Bạn có chắc chắn muốn xóa phòng ban có ID: ${departmentId}?`)) {
-                deleteDepartment(departmentId);
-                // Logic kiểm tra để lùi trang nếu cần
-                if (getAllDepartments().slice((currentPage - 1) * ITEMS_PER_PAGE).length === 0 && currentPage > 1) {
-                    currentPage--;
+/**
+ * HÀM CHÍNH (EXPORT): Gắn sự kiện 1 lần và render nội dung.
+ * @param {HTMLElement} container 
+ */
+function render(container) {
+    // Gắn sự kiện một lần duy nhất khi module được tải
+    if (!container.dataset.departmentEventsAttached) {
+        
+        container.addEventListener('submit', event => {
+            if (event.target.id === 'add-dept-form') {
+                event.preventDefault();
+                const newNameInput = event.target.querySelector('#new-dept-name');
+                const newName = newNameInput.value.trim();
+                if (newName) {
+                    addDepartment(newName);
+                    currentPage = 1; // Quay về trang 1 sau khi thêm
+                    renderPageContent(container);
                 }
-                render(container);
-            }
-        }
-    });
-
-    if (paginationContainer) {
-        paginationContainer.addEventListener('click', event => {
-            const action = event.target.dataset.action;
-            if (action === 'prev' && currentPage > 1) {
-                currentPage--;
-                render(container);
-            }
-            if (action === 'next' && currentPage < totalPages) {
-                currentPage++;
-                render(container);
             }
         });
+
+        container.addEventListener('click', event => {
+            const target = event.target;
+            
+            // Xử lý nút Sửa/Xóa
+            const editBtn = target.closest('.edit-btn');
+            if (editBtn) {
+                const departmentId = editBtn.dataset.id;
+                const currentName = editBtn.closest('tr').children[1].textContent;
+                const newName = prompt('Nhập tên mới cho phòng ban:', currentName);
+                if (newName && newName.trim() !== '') {
+                    updateDepartment(departmentId, newName.trim());
+                    renderPageContent(container);
+                }
+                return;
+            }
+
+            const deleteBtn = target.closest('.delete-btn');
+            if (deleteBtn) {
+                const departmentId = deleteBtn.dataset.id;
+                const relatedPositions = getPositionsByDepartmentId(departmentId);
+                if (relatedPositions.length > 0) {
+                    alert('Lỗi: Không thể xóa phòng ban này vì vẫn còn các vị trí công việc liên quan.');
+                    return;
+                }
+                if (confirm(`Bạn có chắc chắn muốn xóa phòng ban có ID: ${departmentId}?`)) {
+                    deleteDepartment(departmentId);
+                    const newTotalPages = Math.ceil(getAllDepartments().length / ITEMS_PER_PAGE) || 1;
+                    if (currentPage > newTotalPages) {
+                        currentPage = newTotalPages;
+                    }
+                    renderPageContent(container);
+                }
+                return;
+            }
+            
+            // Xử lý phân trang bằng component
+            const totalPages = Math.ceil(getAllDepartments().length / ITEMS_PER_PAGE) || 1;
+            handlePaginationClick(event, { currentPage, totalPages }, (newPage) => {
+                currentPage = newPage;
+                renderPageContent(container);
+            });
+        });
+
+        container.dataset.departmentEventsAttached = 'true';
     }
+
+    // Luôn vẽ lại nội dung khi được gọi
+    renderPageContent(container);
 }
 
 export { render };
