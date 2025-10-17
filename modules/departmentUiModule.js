@@ -18,10 +18,8 @@ const ITEMS_PER_PAGE = 5;
  * @param {HTMLElement} container 
  */
 function renderPageContent(container) {
-    // SỬA LỖI: Gọi hàm để lấy mảng dữ liệu
     const allDepartments = getAllDepartments();
 
-    // SỬA LỖI: Dùng allDepartments.length và allDepartments.slice
     const totalPages = Math.ceil(allDepartments.length / ITEMS_PER_PAGE) || 1;
     const paginatedDepartments = allDepartments.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 

@@ -104,7 +104,6 @@ function deletePosition(id) {
     }
 })();
 
-// Export tất cả các hàm cần thiết để module khác sử dụng
 export { 
     getAllPositions, 
     getPositionsByDepartmentId,

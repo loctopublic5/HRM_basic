@@ -169,7 +169,23 @@ function bindEvents(container) {
     });
 }
 
-function getRatingColor(rating) { /* ... Giữ nguyên ... */ }
+/**
+ * Trả về mã màu dựa trên điểm số rating.
+ * @param {number} rating - Điểm số rating trung bình.
+ * @returns {string} Mã màu hex.
+ */
+function getRatingColor(rating) {
+    if (rating >= 4.0) {
+        return '#27ae60'; // Màu xanh lá cho hiệu suất tốt
+    }
+    if (rating >= 2.5) {
+        return '#f39c12'; // Màu vàng cam cho hiệu suất trung bình
+    }
+    if (rating > 0) {
+        return '#c0392b'; // Màu đỏ cho hiệu suất cần cải thiện
+    }
+    return '#7f8c8d'; // Màu xám cho trường hợp chưa có đánh giá
+}
 
 function updateStars(container, rating, stateClass) {
     const stars = container.querySelectorAll('span');

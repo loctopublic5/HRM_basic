@@ -53,7 +53,6 @@ function renderTable() {
 
     const totalPages = Math.ceil(allEmployees.length / ITEMS_PER_PAGE);
     
-    // --- PHẦN LOGIC BỊ THIẾU NẰM Ở ĐÂY ---
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedEmployees = allEmployees.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
@@ -74,7 +73,7 @@ function renderTable() {
             </thead>
             <tbody>
                 ${paginatedEmployees.map(emp => {
-                    // --- LOGIC TÍNH LƯƠNG MỚI ---
+                    // --- LOGIC TÍNH LƯƠNG  ---
                     const position = positionMap[emp.positionId];
                     const salaryBase = position ? position.salaryBase : 0;
                     const allowance = emp.permanentAllowance || 0;
@@ -190,7 +189,6 @@ function openFormModal(employeeId = null) {
     const positionSelect = modalBody.querySelector('select[name="positionId"]');
     const salaryDisplay = document.getElementById('salary-base-display');
 
-    // --- LOGIC MỚI ĐÃ ĐƯỢC TÁCH BIỆT ---
 
     // Hàm 1: Chỉ cập nhật hiển thị lương
     function updateSalaryDisplay() {
@@ -223,7 +221,7 @@ function openFormModal(employeeId = null) {
         updateSalaryDisplay();
     }
     
-    // --- GẮN SỰ KIỆN THEO LOGIC MỚI ---
+    // --- GẮN SỰ KIỆN THEO LOGIC ---
     departmentSelect.addEventListener('change', updatePositionOptions);
     positionSelect.addEventListener('change', updateSalaryDisplay);
 
@@ -242,7 +240,6 @@ function closeFormModal() {
 function handleFormSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
-    // Không còn lấy 'salary' từ form nữa
     const employeeData = {
         name: formData.get('name'),
         hireDate: formData.get('hireDate'),
@@ -254,13 +251,12 @@ function handleFormSubmit(event) {
         updateEmployee(currentEmployeeId, employeeData);
     } else {
         addEmployee(employeeData);
-        // Cập nhật lại currentPage để xem nhân viên mới
         const totalEmployees = getAllEmployees().length;
         currentPage = Math.ceil(totalEmployees / ITEMS_PER_PAGE);
     }
 
     closeFormModal();
-    renderTable(); // Cập nhật lại bảng
+    renderTable(); 
 }
 
 export { render };

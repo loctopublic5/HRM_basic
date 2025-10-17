@@ -1,10 +1,6 @@
-// === modules/salaryUiModule.js (Phiên bản Hoàn chỉnh) ===
-
 import { getAllEmployees, getEmployeeById } from './employeeDbModule.js';
 import { getPositionById } from './positionModule.js';
 import { addAdjustment, getAdjustmentsForEmployee } from './salaryModule.js';
-// Bỏ import pagination vì module này không cần
-// import { renderPagination, handlePaginationClick } from './paginationComponent.js';
 
 let selectedEmployeeId = null;
 

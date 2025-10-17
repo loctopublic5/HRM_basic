@@ -1,5 +1,3 @@
-// === modules/positionUiModule.js (Phiên bản Hoàn chỉnh, có Phân trang) ===
-
 import { getAllDepartments } from './departmentModule.js';
 import { 
     getAllPositions, 
@@ -24,10 +22,8 @@ function renderPageContent(container) {
     const departments = getAllDepartments();
     const departmentMap = departments.reduce((map, dept) => ({...map, [dept.id]: dept.name}), {});
 
-    // --- LOGIC PHÂN TRANG (ĐÃ SỬA LỖI) ---
     const totalPages = Math.ceil(allPositions.length / ITEMS_PER_PAGE) || 1;
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    // Sửa lỗi: Cắt mảng `allPositions`
     const paginatedPositions = allPositions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     const positionToEdit = isEditing ? allPositions.find(p => p.id === currentPositionId) : null;
@@ -80,7 +76,6 @@ function renderPageContent(container) {
 }
 
 /**
- * HÀM CHÍNH (EXPORT): Gắn sự kiện 1 lần và render nội dung.
  * @param {HTMLElement} container 
  */
 function render(container) {

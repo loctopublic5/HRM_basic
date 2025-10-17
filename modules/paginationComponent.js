@@ -1,5 +1,3 @@
-// === modules/paginationComponent.js ===
-
 /**
  * Render ra chuỗi HTML cho component phân trang.
  * @param {number} currentPage - Trang hiện tại.

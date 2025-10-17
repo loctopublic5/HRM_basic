@@ -1,5 +1,3 @@
-// === modules/leaveUiModule.js (Phiên bản Hoàn chỉnh, có Phân trang) ===
-
 import { getAllEmployees } from './employeeDbModule.js';
 import { addLeaveRequest, getAllLeaveRequests, updateLeaveStatus, getLeaveBalance } from './leaveModule.js';
 import { renderPagination, handlePaginationClick } from './paginationComponent.js';
@@ -16,11 +14,8 @@ function renderPageContent(container) {
     const employees = getAllEmployees();
     const allRequests = getAllLeaveRequests();
 
-    // --- LOGIC PHÂN TRANG (ĐÃ SỬA LỖI) ---
-    // Sửa lỗi: Phân trang trên mảng `allRequests`, không phải `allEmployees`
     const totalPages = Math.ceil(allRequests.length / ITEMS_PER_PAGE) || 1;
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    // Sửa lỗi: Cắt mảng `allRequests`
     const paginatedRequests = allRequests.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     const paginationHtml = renderPagination(currentPage, totalPages);
@@ -53,11 +48,11 @@ function renderPageContent(container) {
                 <tr><th>Nhân viên</th><th>Thời gian nghỉ</th><th>Loại</th><th>Trạng thái</th><th>Hành động</th></tr>
             </thead>
             <tbody>
-                ${paginatedRequests.map(req => { // Sửa lỗi: Dùng `paginatedRequests`
+                ${paginatedRequests.map(req => { 
                     const employee = employees.find(emp => emp.id === req.employeeId);
                     const actionsHtml = req.status === 'pending'
                         ? `<button class="approve-btn" data-leave-id="${req.id}">Duyệt</button>
-                           <button class="reject-btn" data-leave-id="${req.id}">Từ chối</button>`
+                        <button class="reject-btn" data-leave-id="${req.id}">Từ chối</button>`
                         : '<span>-</span>';
                     return `
                         <tr>
