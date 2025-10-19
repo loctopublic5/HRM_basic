@@ -1,7 +1,7 @@
-// === modules/attendanceUiModule.js (Phiên bản Hoàn chỉnh, có Phân trang) ===
+// === modules/attendanceUiModule.js (Phiên bản Giao diện Nâng cao) ===
 
 import { getAllEmployees } from './employeeDbModule.js';
-import { checkIn, checkOut, getTodaysAttendanceForEmployee, calculateWorkHours } from './attendanceModule.js';
+import { checkIn, checkOut, getTodaysAttendanceForEmployee } from './attendanceModule.js';
 import { renderPagination, handlePaginationClick } from './paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO PHÂN TRANG ---
@@ -15,10 +15,8 @@ const ITEMS_PER_PAGE = 10;
 function renderAttendancePage(container) {
     const allEmployees = getAllEmployees();
 
-    // --- LOGIC PHÂN TRANG (ĐÃ SỬA LỖI) ---
     const totalPages = Math.ceil(allEmployees.length / ITEMS_PER_PAGE) || 1;
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    // Sửa lỗi: Cắt mảng với chỉ số bắt đầu và kết thúc
     const paginatedEmployees = allEmployees.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     const paginationHtml = renderPagination(currentPage, totalPages);
@@ -40,19 +38,36 @@ function renderAttendancePage(container) {
             <tbody>
                 ${paginatedEmployees.map(emp => {
                     const todaysRecord = getTodaysAttendanceForEmployee(emp.id);
-                    let statusHtml = '<span class="status-neutral">○ Chưa chấm công</span>';
+                    
+                    let statusHtml = '<span class="tag tag-neutral">Chưa chấm công</span>';
                     let lastUpdateTime = '—';
                     let totalHours = '—';
                     let actionButtonHtml = `<button class="action-btn" data-employee-id="${emp.id}" data-action="check-in">Check In</button>`;
 
                     if (todaysRecord) {
                         if (todaysRecord.checkOut) {
-                            statusHtml = '<span class="status-out">■ Đã ra</span>';
+                            // --- LOGIC HIỂN THỊ TRẠNG THÁI MỚI ---
+                            let statusMessage = 'Đúng giờ';
+                            switch (todaysRecord.status) {
+                                case 'late':
+                                    statusMessage = `Đi trễ ${todaysRecord.lateMinutes}m`;
+                                    break;
+                                case 'early_leave':
+                                    statusMessage = `Về sớm ${todaysRecord.earlyLeaveMinutes}m`;
+                                    break;
+                                case 'late_and_early':
+                                    statusMessage = `Trễ & Về sớm`;
+                                    break;
+                            }
+                            
+                            statusHtml = `<span class="tag tag-${todaysRecord.status}">${statusMessage}</span>`;
                             lastUpdateTime = new Date(todaysRecord.checkOut).toLocaleTimeString('vi-VN');
-                            totalHours = calculateWorkHours(todaysRecord.checkIn, todaysRecord.checkOut);
+                            totalHours = `${todaysRecord.workDuration.toFixed(1)} giờ`;
                             actionButtonHtml = '<span>Đã hoàn thành</span>';
+
                         } else {
-                            statusHtml = '<span class="status-in">● Đã vào</span>';
+                            // Trạng thái đang làm việc
+                            statusHtml = '<span class="tag tag-working">● Đang làm việc</span>';
                             lastUpdateTime = new Date(todaysRecord.checkIn).toLocaleTimeString('vi-VN');
                             actionButtonHtml = `<button class="action-btn" data-employee-id="${emp.id}" data-action="check-out">Check Out</button>`;
                         }
@@ -76,12 +91,10 @@ function renderAttendancePage(container) {
 
 /**
  * Hàm render chính, chịu trách nhiệm gắn sự kiện một lần duy nhất.
- * @param {HTMLElement} container 
  */
 function render(container) {
     if (!container.dataset.attendanceEventsAttached) {
-        container.addEventListener('click', (event) => {
-            // Xử lý nút check-in/check-out
+        container.addEventListener('click', event => {
             const actionButton = event.target.closest('.action-btn');
             if (actionButton && actionButton.dataset.employeeId) {
                 const employeeId = actionButton.dataset.employeeId;
@@ -93,18 +106,16 @@ function render(container) {
                 return;
             }
 
-            // Xử lý nút phân trang
             handlePaginationClick(event, { 
                 currentPage, 
                 totalPages: Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE) || 1
             }, (newPage) => {
                 currentPage = newPage;
-                renderAttendancePage(container); // SỬA LỖI: Gọi đúng hàm render nội dung
+                renderAttendancePage(container);
             });
         });
         container.dataset.attendanceEventsAttached = 'true';
     }
-
     renderAttendancePage(container);
 }
 

@@ -176,3 +176,23 @@ button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
     background-color: #f9f9f9;
     border-color: #eee;
 }
+
+/* === CSS CHO TAG TRẠNG THÁI CHẤM CÔNG === */
+.tag {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+}
+.tag-on_time { background-color: #27ae60; }        
+.tag-late { background-color: #e74c3c; }           
+.tag-early_leave { background-color: #f39c12; }   
+.tag-late_and_early { background-color: #c0392b; } 
+.tag-working { background-color: #3498db; }       
+.tag-neutral {
+    background-color: #ecf0f1;
+    color: #7f8c8d;
+    border: 1px solid #bdc3c7;
+}
