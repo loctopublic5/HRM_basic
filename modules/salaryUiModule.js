@@ -1,6 +1,6 @@
 import { getAllEmployees, getEmployeeById } from './employeeDbModule.js';
 import { getPositionById } from './positionModule.js';
-// Import hàm tính toán mới và các hàm khác
+import { isGreaterThanZero } from './validators.js';
 import { addAdjustment, getAdjustmentsForEmployee, calculateSalaryDetails } from './salaryModule.js';
 
 let selectedEmployeeId = null;
@@ -95,16 +95,29 @@ function render(container) {
             if (event.target.id === 'adjustment-form') {
                 event.preventDefault();
                 const formData = new FormData(event.target);
+                const amount = formData.get('amount');
+                const type = formData.get('type');
+                const description = formData.get('description');
+
+                if (!isGreaterThanZero(amount, 'Số tiền')) {
+                    return; 
+                }
+                
+                const maxAmount = 50000000;
+                if (parseInt(amount) > maxAmount) {
+                    alert(`Số tiền điều chỉnh không được vượt quá ${maxAmount.toLocaleString('vi-VN')} VND.`);
+                    return; 
+                }
+                
                 addAdjustment({
                     employeeId: selectedEmployeeId,
-                    type: formData.get('type'),
-                    amount: formData.get('amount'),
-                    description: formData.get('description'),
+                    type: type,
+                    amount: amount,
+                    description: description,
                 });
                 renderSalaryDetails(container.querySelector('#salary-details-container'));
             }
         });
-
         container.dataset.salaryEventsAttached = 'true';
     }
 

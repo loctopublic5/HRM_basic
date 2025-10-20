@@ -9,3 +9,4 @@ IDEA
 -Chấm công theo ca (hành chính 8h) trước 8h - sau 17h -> tính toán đủ hay thiếu giờ công
 -Phòng ban có valid và xem chi tiết phòng ban
 -Lương thưởng theo vị trí 
+
