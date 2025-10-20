@@ -7,7 +7,6 @@ const mockEmployees = [
         name: 'Nguyễn Văn A', 
         departmentId: 'dept_it', 
         positionId: 'pos_dev', 
-        permanentAllowance: 0, 
         hireDate: '2023-01-15' 
     },
     { 
@@ -15,7 +14,6 @@ const mockEmployees = [
         name: 'Trần Thị B', 
         departmentId: 'dept_hr', 
         positionId: 'pos_recruiter', 
-        permanentAllowance: 0,
         hireDate: '2022-08-20' 
     },
     { 
@@ -23,7 +21,6 @@ const mockEmployees = [
         name: 'Lê Văn C', 
         departmentId: 'dept_mkt', 
         positionId: 'pos_manager', 
-        permanentAllowance: 0,
         hireDate: '2021-05-10' 
     },
 ];
@@ -107,21 +104,7 @@ function deleteEmployee(id) {
     }
 })();
 
-/**
- * Cập nhật Phụ cấp Cố định cho một nhân viên.
- * @param {string} employeeId 
- * @param {number} amountToAdd - Số tiền tăng thêm.
- */
-function updateEmployeeAllowance(employeeId, amountToAdd) {
-    const employees = getAllEmployees();
-    const index = employees.findIndex(emp => emp.id === employeeId);
-    if (index !== -1) {
-        employees[index].permanentAllowance += amountToAdd;
-        saveEmployees(employees);
-    }
-}
 
 // Export các hàm để các module khác có thể sử dụng
 export { getAllEmployees, saveEmployees, getEmployeeById
-, addEmployee, updateEmployee, deleteEmployee, updateEmployeeAllowance
-};
+, addEmployee, updateEmployee, deleteEmployee};

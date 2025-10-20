@@ -1,5 +1,5 @@
 import { getPositionById } from './positionModule.js';
-import { getEmployeeById } from './employeeDbModule.js';
+import {  getEmployeeById } from './employeeDbModule.js';
 
 const ADJUSTMENTS_STORAGE_KEY = 'hrm_salary_adjustments';
 
@@ -55,32 +55,35 @@ export function addAdjustment({ employeeId, type, amount, description }) {
     allAdjustments.push(newAdjustment);
     saveAdjustments(allAdjustments);
     
-    // Khối "if (type === 'allowance')" đã được xóa bỏ hoàn toàn.
-    
     return true;
 }
 
 /**
- * Tính toán tổng lương cơ bản hiện tại của nhân viên (base + allowance).
- * @param {object} employee - Đối tượng nhân viên đầy đủ.
- * @returns {number} Tổng lương cơ bản.
+ * Tính toán chi tiết lương cơ bản của một nhân viên.
+ * Trả về lương gốc, tổng phụ cấp cho vị trí hiện tại, và tổng lương.
+ * @param {object} employee - Đối tượng nhân viên.
+ * @returns {{salaryBase: number, currentAllowance: number, totalSalary: number}}
  */
-export function calculateCurrentTotalSalary(employee) {
-    if (!employee) return 0;
+export function calculateSalaryDetails(employee) {
+    if (!employee) return { salaryBase: 0, currentAllowance: 0, totalSalary: 0 };
 
-    // 1. Lấy lương cơ bản từ vị trí hiện tại của nhân viên
+    // 1. Lấy lương cơ bản từ vị trí hiện tại
     const position = getPositionById(employee.positionId);
     const salaryBase = position ? position.salaryBase : 0;
     
-    // 2. Lấy tất cả các bản ghi điều chỉnh của nhân viên này
+    // 2. Lấy tất cả các bản ghi điều chỉnh của nhân viên
     const allAdjustments = getAdjustmentsForEmployee(employee.id);
 
     // 3. Lọc và tính tổng các khoản 'allowance' CHỈ cho vị trí HIỆN TẠI
-    const currentPositionAllowances = allAdjustments
+    const currentAllowance = allAdjustments
         .filter(adj => adj.type === 'allowance' && adj.positionId === employee.positionId)
         .reduce((sum, adj) => sum + adj.amount, 0);
     
-    // 4. Trả về tổng cuối cùng
-    return salaryBase + currentPositionAllowances;
+    // 4. Trả về đối tượng chi tiết
+    return {
+        salaryBase,
+        currentAllowance,
+        totalSalary: salaryBase + currentAllowance
+    };
 }
 

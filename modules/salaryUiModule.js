@@ -1,6 +1,7 @@
 import { getAllEmployees, getEmployeeById } from './employeeDbModule.js';
 import { getPositionById } from './positionModule.js';
-import { addAdjustment, getAdjustmentsForEmployee } from './salaryModule.js';
+// Import hàm tính toán mới và các hàm khác
+import { addAdjustment, getAdjustmentsForEmployee, calculateSalaryDetails } from './salaryModule.js';
 
 let selectedEmployeeId = null;
 
@@ -15,18 +16,26 @@ function renderSalaryDetails(container) {
     }
 
     const employee = getEmployeeById(selectedEmployeeId);
+    if (!employee) { // Thêm kiểm tra an toàn
+        container.innerHTML = '<p>Không tìm thấy thông tin nhân viên.</p>';
+        return;
+    }
+    
     const position = getPositionById(employee.positionId);
     const adjustments = getAdjustmentsForEmployee(selectedEmployeeId);
 
-    const salaryBase = position ? position.salaryBase : 0;
-    const totalSalary = salaryBase + employee.permanentAllowance;
+    // --- SỬ DỤNG HÀM TÍNH TOÁN "ĐỘNG" MỚI ---
+    const { salaryBase, currentAllowance, totalSalary } = calculateSalaryDetails(employee);
 
     container.innerHTML = `
         <hr>
         <h4>Thông tin lương: ${employee.name}</h4>
-        <p><strong>Lương cơ bản (từ Vị trí):</strong> ${salaryBase.toLocaleString('vi-VN')} VND</p>
-        <p><strong>Phụ cấp cố định:</strong> ${employee.permanentAllowance.toLocaleString('vi-VN')} VND</p>
-        <p><strong>Tổng lương cơ bản hiện tại:</strong> ${totalSalary.toLocaleString('vi-VN')} VND</p>
+        <div class="salary-details">
+            <p><strong>Vị trí hiện tại:</strong> ${position ? position.title : 'N/A'}</p>
+            <p><strong>Lương cơ bản (từ Vị trí):</strong> ${salaryBase.toLocaleString('vi-VN')} VND</p>
+            <p><strong>Tổng phụ cấp (cho Vị trí này):</strong> ${currentAllowance.toLocaleString('vi-VN')} VND</p>
+            <p class="total-salary"><strong>Tổng lương cơ bản hiện tại:</strong> ${totalSalary.toLocaleString('vi-VN')} VND</p>
+        </div>
 
         <h4>Thêm điều chỉnh mới</h4>
         <form id="adjustment-form">
@@ -39,18 +48,31 @@ function renderSalaryDetails(container) {
             <button type="submit">Lưu điều chỉnh</button>
         </form>
 
-        <h4>Lịch sử điều chỉnh</h4>
+        <h4>Lịch sử điều chỉnh (Tất cả vị trí)</h4>
         <table>
-            <thead><tr><th>Ngày</th><th>Loại</th><th>Số tiền</th><th>Mô tả</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Ngày</th>
+                    <th>Vị trí</th>
+                    <th>Loại</th>
+                    <th>Số tiền</th>
+                    <th>Mô tả</th>
+                </tr>
+            </thead>
             <tbody>
-                ${adjustments.map(adj => `
-                    <tr>
-                        <td>${adj.date}</td>
-                        <td>${adj.type === 'bonus' ? 'Thưởng' : 'Tăng lương'}</td>
-                        <td>${adj.amount.toLocaleString('vi-VN')} VND</td>
-                        <td>${adj.description}</td>
-                    </tr>
-                `).join('')}
+                ${adjustments.map(adj => {
+                    // Lấy thông tin vị trí tại thời điểm điều chỉnh
+                    const adjPosition = getPositionById(adj.positionId);
+                    return `
+                        <tr>
+                            <td>${adj.date}</td>
+                            <td>${adjPosition ? adjPosition.title : 'Vị trí cũ/Không xác định'}</td>
+                            <td>${adj.type === 'bonus' ? 'Thưởng' : 'Tăng lương'}</td>
+                            <td>${adj.amount.toLocaleString('vi-VN')} VND</td>
+                            <td>${adj.description}</td>
+                        </tr>
+                    `;
+                }).join('')}
             </tbody>
         </table>
     `;
@@ -58,12 +80,10 @@ function renderSalaryDetails(container) {
 
 /**
  * Hàm render chính, điểm vào của module.
- * @param {HTMLElement} container 
  */
 function render(container) {
-    // Chỉ gắn sự kiện MỘT LẦN DUY NHẤT
+    // Chỉ gắn sự kiện một lần duy nhất
     if (!container.dataset.salaryEventsAttached) {
-        // Sử dụng Event Delegation cho toàn bộ module
         container.addEventListener('change', event => {
             if (event.target.id === 'employee-select') {
                 selectedEmployeeId = event.target.value;
