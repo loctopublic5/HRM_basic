@@ -1,13 +1,8 @@
 import { getAllDepartments } from './departmentModule.js';
 import { getAllPositions, getPositionById, getPositionsByDepartmentId } from './positionModule.js';
-import { 
-    getAllEmployees, 
-    getEmployeeById,
-    addEmployee,
-    updateEmployee,
-    deleteEmployee
-} from './employeeDbModule.js';
+import { getAllEmployees, getEmployeeById,addEmployee,updateEmployee,deleteEmployee} from './employeeDbModule.js';
 import { renderPagination, handlePaginationClick } from './paginationComponent.js';
+import { isNotEmpty, isNameUnique, isGreaterThanZero } from './validators.js';
 
 // --- Biến trạng thái của module ---
 let isEditing = false;
@@ -93,8 +88,8 @@ function renderTable() {
                             <td>${formattedSalary}</td>
                             <td>${emp.hireDate}</td>
                             <td class="actions">
-                                <button class="edit-btn" data-id="${emp.id}">Sửa</button>
-                                <button class="delete-btn" data-id="${emp.id}">Xóa</button>
+                                <button class="epl-edit-btn" data-id="${emp.id}">Sửa</button>
+                                <button class="epl-delete-btn" data-id="${emp.id}">Xóa</button>
                             </td>
                         </tr>
                     `;
@@ -121,11 +116,11 @@ function bindMainEvents() {
 
 
     tableContainer.addEventListener('click', (event) => {
-        if (event.target.classList.contains('edit-btn')) {
+        if (event.target.classList.contains('epl-edit-btn')) {
             openFormModal(event.target.dataset.id);
         }
         
-        if (event.target.classList.contains('delete-btn')) {
+        if (event.target.classList.contains('epl-delete-btn')) {
             if (confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
                 const totalEmployeesBeforeDelete = getAllEmployees().length;
                 deleteEmployee(event.target.dataset.id);
@@ -161,26 +156,40 @@ function openFormModal(employeeId = null) {
     const modalBody = document.getElementById('modal-body');
     const departments = getAllDepartments();
 
+    // Lấy ngày hôm nay và định dạng thành 'YYYY-MM-DD' để dùng cho input
+    const todayString = new Date().toISOString().split('T')[0];
+
     modalBody.innerHTML = `
         <h3>${isEditing ? 'Chỉnh sửa Nhân viên' : 'Thêm Nhân viên mới'}</h3>
         <form id="employee-form">
             <label>Tên:</label>
             <input type="text" name="name" value="${employee.name || ''}" required>
+            
             <label>Ngày vào làm:</label>
-            <input type="date" name="hireDate" value="${employee.hireDate || ''}" required>
+            <input 
+                type="date" 
+                name="hireDate" 
+                value="${employee.hireDate || todayString}" 
+                max="${todayString}" 
+                required
+            >
+
             <label>Phòng ban:</label>
             <select name="departmentId" required>
                 <option value="">-- Chọn phòng ban --</option>
                 ${departments.map(d => `<option value="${d.id}" ${d.id === employee.departmentId ? 'selected' : ''}>${d.name}</option>`).join('')}
             </select>
+
             <label>Vị trí:</label>
             <select name="positionId" required>
                 <option value="">-- Vui lòng chọn phòng ban trước --</option>
             </select>
+
             <div class="salary-display">
                 <strong>Lương cơ bản (từ Vị trí):</strong>
                 <span id="salary-base-display">—</span>
             </div>
+
             <button type="submit">${isEditing ? 'Lưu thay đổi' : 'Thêm mới'}</button>
         </form>
     `;
@@ -240,23 +249,34 @@ function closeFormModal() {
 function handleFormSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
-    const employeeData = {
-        name: formData.get('name'),
-        hireDate: formData.get('hireDate'),
-        departmentId: formData.get('departmentId'),
-        positionId: formData.get('positionId'),
-    };
+    const name = formData.get('name');
+    const hireDate = formData.get('hireDate');
+    const departmentId = formData.get('departmentId');
+    const positionId = formData.get('positionId');
+
+    // Lấy danh sách nhân viên hiện tại để kiểm tra trùng lặp
+    const allEmployees = getAllEmployees();
+
+    if (!isNotEmpty(name, 'Tên nhân viên') || 
+        !isNotEmpty(hireDate, 'Ngày vào làm') ||
+        !isNotEmpty(departmentId, 'Phòng ban') ||
+        !isNotEmpty(positionId, 'Vị trí') ||
+        !isNameUnique(name, allEmployees, isEditing ? currentEmployeeId : null)
+    ) {
+        return; // Dừng lại nếu một trong các điều kiện không thỏa mãn
+    }
+
+    const employeeData = { name, hireDate, departmentId, positionId };
 
     if (isEditing) {
         updateEmployee(currentEmployeeId, employeeData);
     } else {
         addEmployee(employeeData);
-        const totalEmployees = getAllEmployees().length;
-        currentPage = Math.ceil(totalEmployees / ITEMS_PER_PAGE);
+        currentPage = Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE);
     }
 
     closeFormModal();
-    renderTable(); 
+    renderTable(); // Cập nhật lại bảng
 }
 
 export { render };
