@@ -4,9 +4,14 @@ _TASK2: Nâng cao: tạo option setting cho người dùng kiểm tra valid theo
 #TASK4: Phòng ban thêm chi tiết đó là tìm dược nhân viên ở phong ban hay cả ở vị trí làm việc nào trong phòng ban
 
 ----------------------------------
-IDEA
+progess
 
 -Chấm công theo ca (hành chính 8h) trước 8h - sau 17h -> tính toán đủ hay thiếu giờ công
 -Phòng ban có valid và xem chi tiết phòng ban
 -Lương thưởng theo vị trí 
 
+------------------------------
+IDEA 
+
+-Tính hiệu suất theo chu kỳ tháng
+-Tìm kiếm nhân viên theo từng option tìm kiếm( theo tên, tên + phòng ban, tên + phòng ban + vị trí)
