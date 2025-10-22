@@ -7,6 +7,7 @@ import * as AttendanceUI from './modules/attendanceUiModule.js';
 import * as SalaryUI from './modules/salaryUiModule.js';
 import * as LeaveUI from './modules/leaveUiModule.js';
 import * as PerformanceUI from './modules/performanceUiModule.js';
+import * as searchUi from './modules/searchUiModule.js';
 
 
 let loginView, appContainer, mainContent; 
@@ -145,6 +146,9 @@ function navigate(module) {
     switch (module) {
         case 'employeeManagement':
             EmployeeManagementUI.render(mainContent);
+            break;
+        case 'search':
+            searchUi.render(mainContent);
             break;
         case 'managePositions': 
             PositionUI.render(mainContent);

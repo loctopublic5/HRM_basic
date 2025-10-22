@@ -132,7 +132,6 @@ function bindMainEvents() {
  * Mở và render form trong modal
  * @param {string|null} employeeId - ID của nhân viên (nếu là sửa), null (nếu là thêm)
  */
-// === Trong file modules/employeeManagementModule.js ===
 
 /**
  * Mở và render form trong modal (Phiên bản đã hợp nhất logic).

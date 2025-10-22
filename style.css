@@ -196,3 +196,7 @@ button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
     color: #7f8c8d;
     border: 1px solid #bdc3c7;
 }
+
+/* Search */
+.search-form .form-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+.search-form .form-group { flex: 1; }
