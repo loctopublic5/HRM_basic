@@ -1,64 +1,94 @@
-const DEPARTMENTS_STORAGE_KEY = 'hrm_departments';
+// === modules/departmentModule.js (SAU) ===
 
-const mockDepartments = [
-    { id: 'dept_it', name: 'Công nghệ thông tin' },
-    { id: 'dept_hr', name: 'Nhân sự' },
-    { id: 'dept_mkt', name: 'Marketing' },
-    { id: 'dept_sale', name: 'Kinh doanh' },
-    { id: 'dept_acc', name: 'Kế toán' },
-    { id: 'dept_ops', name: 'Vận hành' },
-];
+const API_BASE_URL = 'http://localhost/hrm_project/backend/api.php';
 
-function getAllDepartments() {
-    const data = localStorage.getItem(DEPARTMENTS_STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-}
-
-function saveDepartments(departments) {
-    localStorage.setItem(DEPARTMENTS_STORAGE_KEY, JSON.stringify(departments));
-}
-
-function getDepartmentById(id) {
-    const departments = getAllDepartments();
-    return departments.find(dept => dept.id === id) || null;
-}
-
-function addDepartment(name) {
-    const departments = getAllDepartments();
-    const newDepartment = {
-        id: `dept_${Date.now()}`,
-        name: name,
-    };
-    departments.push(newDepartment);
-    saveDepartments(departments);
-}
-
-function updateDepartment(id, newName) {
-    const departments = getAllDepartments();
-    const index = departments.findIndex(dept => dept.id === id);
-    if (index !== -1) {
-        departments[index].name = newName;
-        saveDepartments(departments);
+/**
+ * Lấy tất cả phòng ban đang hoạt động từ API.
+ */
+export async function getAllDepartments() {
+    try {
+        const response = await fetch(`${API_BASE_URL}?resource=departments`, {
+            method: 'GET'
+        });
+        if (!response.ok) {
+            throw new Error('Lỗi khi tải danh sách phòng ban.');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('getAllDepartments error:', error);
+        alert(error.message);
+        return []; // Luôn trả về mảng để tránh lỗi ở UI
     }
 }
 
-function deleteDepartment(id) {
-    let departments = getAllDepartments();
-    departments = departments.filter(dept => dept.id !== id);
-    saveDepartments(departments);
+/**
+ * Thêm một phòng ban mới qua API.
+ * @param {string} name Tên phòng ban mới.
+ */
+export async function addDepartment(name) {
+    try {
+        const response = await fetch(`${API_BASE_URL}?resource=departments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name })
+        });
+        const result = await response.json();
+        
+        if (!response.ok) {
+            // Ném lỗi trả về từ server (ví dụ: "Tên phòng ban đã tồn tại.")
+            throw new Error(result.error || 'Thêm phòng ban thất bại.');
+        }
+        return true;
+    } catch (error) {
+        console.error('addDepartment error:', error);
+        alert(error.message); // Hiển thị lỗi cho người dùng
+        return false;
+    }
 }
 
-(function init() {
-    if (getAllDepartments().length === 0) {
-        saveDepartments(mockDepartments);
-        console.log('Khởi tạo dữ liệu phòng ban mẫu thành công!');
+/**
+ * Cập nhật phòng ban qua API.
+ * @param {string} id ID phòng ban.
+ * @param {string} newName Tên mới.
+ */
+export async function updateDepartment(id, newName) {
+    try {
+        const response = await fetch(`${API_BASE_URL}?resource=departments&id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: newName })
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || 'Cập nhật thất bại.');
+        }
+        return true;
+    } catch (error) {
+        console.error('updateDepartment error:', error);
+        alert(error.message);
+        return false;
     }
-})();
+}
 
-export { 
-    getAllDepartments, 
-    getDepartmentById,
-    addDepartment,
-    updateDepartment,
-    deleteDepartment
-};
+/**
+ * Xóa mềm phòng ban qua API.
+ * @param {string} id ID phòng ban.
+ */
+export async function deleteDepartment(id) {
+    try {
+        const response = await fetch(`${API_BASE_URL}?resource=departments&id=${id}`, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || 'Xóa thất bại.');
+        }
+        return true;
+    } catch (error) {
+        console.error('deleteDepartment error:', error);
+        alert(error.message);
+        return false;
+    }
+}
+
+// (Bạn sẽ cần thêm hàm getDepartmentById(id) nếu module UI cần)

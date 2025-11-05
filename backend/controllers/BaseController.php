@@ -1,15 +1,7 @@
 <?php
-// backend/controllers/BaseController.php
+class BaseController { 
 
-/**
- * Class BaseController - Lớp cơ sở VÀ LÀ lớp tiện ích.
- */
-class BaseController { // <-- 1. Bỏ từ khóa "abstract"
 
-    /**
-     * Gửi phản hồi JSON về client.
-     * (Sửa thành public để có thể gọi từ bên ngoài)
-     */
     public function sendResponse($data, int $statusCode = 200): void {
         http_response_code($statusCode);
         header('Content-Type: application/json; charset=utf-8');

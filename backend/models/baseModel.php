@@ -1,11 +1,7 @@
 <?php
 // Luôn require file database trước
-require_once __DIR__ . '/backend/config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
-/**
- * Class abstract BaseModel - Lớp cơ sở cho tất cả các Model.
- * Tự động cung cấp kết nối PDO cho các lớp con.
- */
 abstract class BaseModel {
     // Thuộc tính protected để lớp con có thể truy cập
     protected PDO $pdo;
