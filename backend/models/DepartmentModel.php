@@ -1,10 +1,5 @@
 <?php
-// backend/models/DepartmentModel.php
 
-/**
- * DepartmentModel kế thừa từ BaseModel,
- * chịu trách nhiệm tương tác với bảng 'departments' trong CSDL.
- */
 class DepartmentModel extends BaseModel {
     
     /**

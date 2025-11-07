@@ -26,8 +26,8 @@ let detailSortOrder = 'asc';
 /**
  * HÀM RENDER VIEW DANH SÁCH PHÒNG BAN
  */
-function renderListView(container) {
-    const allDepartments = getAllDepartments();
+async function renderListView(container) {
+    const allDepartments = await getAllDepartments();
     const totalPages = Math.ceil(allDepartments.length / LIST_ITEMS_PER_PAGE) || 1;
     const paginatedDepartments = allDepartments.slice((listCurrentPage - 1) * LIST_ITEMS_PER_PAGE, listCurrentPage * LIST_ITEMS_PER_PAGE);
     const paginationHtml = renderPagination(listCurrentPage, totalPages);
@@ -65,8 +65,8 @@ function renderListView(container) {
 /**
  * HÀM RENDER VIEW CHI TIẾT PHÒNG BAN
  */
-function renderDetailsView(container, departmentId) {
-    const department = getDepartmentById(departmentId);
+async function renderDetailsView(container, departmentId) {
+    const department = await getDepartmentById(departmentId);
     if (!department) {
         container.innerHTML = `<h2>Không tìm thấy phòng ban</h2><button id="back-to-depts">Quay lại</button>`;
         return;

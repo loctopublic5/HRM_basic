@@ -1,23 +1,35 @@
-// === modules/departmentModule.js (SAU) ===
 
+
+// 1. Định nghĩa URL API
+// Đảm bảo URL này khớp với tên thư mục dự án của bạn trong htdocs
 const API_BASE_URL = 'http://localhost/hrm_project/backend/api.php';
 
 /**
- * Lấy tất cả phòng ban đang hoạt động từ API.
+ * 2. Lấy tất cả phòng ban từ API.
+ * Hàm này giờ là 'async' (bất đồng bộ).
  */
 export async function getAllDepartments() {
     try {
         const response = await fetch(`${API_BASE_URL}?resource=departments`, {
             method: 'GET'
         });
+        
+        // 3. Kiểm tra lỗi mạng hoặc lỗi server
         if (!response.ok) {
-            throw new Error('Lỗi khi tải danh sách phòng ban.');
+            throw new Error(`Lỗi HTTP: ${response.status} ${response.statusText}`);
         }
-        return await response.json();
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        return data; // Trả về mảng JSON
     } catch (error) {
-        console.error('getAllDepartments error:', error);
-        alert(error.message);
-        return []; // Luôn trả về mảng để tránh lỗi ở UI
+        console.error('Lỗi khi tải danh sách phòng ban:', error);
+        alert('Không thể tải dữ liệu phòng ban. ' + error.message);
+        return []; // Luôn trả về mảng rỗng để UI không bị "vỡ"
     }
 }
 
@@ -29,20 +41,24 @@ export async function addDepartment(name) {
     try {
         const response = await fetch(`${API_BASE_URL}?resource=departments`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name })
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: name }) // 4. Gửi dữ liệu JSON
         });
+        
         const result = await response.json();
         
+        // 5. Kiểm tra lỗi nghiệp vụ (ví dụ: tên trùng)
         if (!response.ok) {
-            // Ném lỗi trả về từ server (ví dụ: "Tên phòng ban đã tồn tại.")
             throw new Error(result.error || 'Thêm phòng ban thất bại.');
         }
-        return true;
+        
+        return true; // Thành công
     } catch (error) {
-        console.error('addDepartment error:', error);
-        alert(error.message); // Hiển thị lỗi cho người dùng
-        return false;
+        console.error('Lỗi khi thêm phòng ban:', error);
+        alert(error.message);
+        return false; // Thất bại
     }
 }
 
@@ -58,13 +74,15 @@ export async function updateDepartment(id, newName) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: newName })
         });
+        
         const result = await response.json();
         if (!response.ok) {
             throw new Error(result.error || 'Cập nhật thất bại.');
         }
+        
         return true;
     } catch (error) {
-        console.error('updateDepartment error:', error);
+        console.error('Lỗi khi cập nhật phòng ban:', error);
         alert(error.message);
         return false;
     }
@@ -79,16 +97,33 @@ export async function deleteDepartment(id) {
         const response = await fetch(`${API_BASE_URL}?resource=departments&id=${id}`, {
             method: 'DELETE'
         });
+        
         const result = await response.json();
         if (!response.ok) {
             throw new Error(result.error || 'Xóa thất bại.');
         }
+        
         return true;
     } catch (error) {
-        console.error('deleteDepartment error:', error);
+        console.error('Lỗi khi xóa phòng ban:', error);
         alert(error.message);
         return false;
     }
 }
 
-// (Bạn sẽ cần thêm hàm getDepartmentById(id) nếu module UI cần)
+/**
+ * Lấy một phòng ban theo ID.
+ * (Hàm này cũng cần chuyển sang async)
+ */
+export async function getDepartmentById(id) {
+    try {
+        const response = await fetch(`${API_BASE_URL}?resource=departments&id=${id}`);
+        if (!response.ok) {
+            throw new Error('Lỗi khi tải thông tin phòng ban.');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('getDepartmentById error:', error);
+        return null;
+    }
+}
