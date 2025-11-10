@@ -73,8 +73,29 @@ try {
             elseif ($method === 'DELETE' && $id !== null) $controller->softDelete($id);
             else (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
             break;
-        
-        // (Chúng ta sẽ thêm case 'employees' sau)
+        case 'employees':
+            $controller = new EmployeeController(); // Autoloader sẽ nạp file
+
+            if ($method === 'GET') {
+                if (isset($_GET['name']) || isset($_GET['deptId']) || isset($_GET['posId'])) {
+                    $controller->searchEmployees();
+                } else {
+                    $controller->listEmployees();
+                }
+            }
+            elseif ($method === 'POST') {
+                $controller->addEmployee();
+            } 
+            elseif ($method === 'PUT' && $id !== null) {
+                $controller->updateEmployee($id);
+            } 
+            elseif ($method === 'DELETE' && $id !== null) {
+                $controller->deleteEmployee($id);
+            } 
+            else {
+                (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
+            }
+            break;
 
         default:
             (new BaseController())->sendError('Resource not found', 404);

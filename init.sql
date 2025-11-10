@@ -165,27 +165,29 @@ CREATE TABLE `performance_reviews` (
   CONSTRAINT `fk_review_reviewer` FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- (Thêm dữ liệu mẫu cho performance_reviews nếu cần)
-
 -- ----------------------------
--- Bảng: salary_adjustments
+-- Bảng: salary_history 
 -- ----------------------------
-DROP TABLE IF EXISTS `salary_adjustments`;
-CREATE TABLE `salary_adjustments` (
-  `id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+DROP TABLE IF EXISTS `salary_history`;
+CREATE TABLE `salary_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `employee_id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `position_id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL, -- Vị trí tại thời điểm điều chỉnh
-  `type` enum('bonus','allowance') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `amount` decimal(15,2) NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `date` date NOT NULL,
+  `position_id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `change_type` enum('allowance','bonus','deduction') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `effective_date` date NOT NULL,
+  `reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_by_user_id` int(11) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `fk_adj_emp` (`employee_id`),
-  KEY `fk_adj_pos` (`position_id`),
-  KEY `idx_adj_type` (`type`),
-  KEY `idx_adj_date` (`date`),
-  CONSTRAINT `fk_adj_emp` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
-  CONSTRAINT `fk_adj_pos` FOREIGN KEY (`position_id`) REFERENCES `positions` (`id`) ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- (Thêm dữ liệu mẫu cho salary_adjustments nếu cần)
+  KEY `fk_salary_emp` (`employee_id`),
+  KEY `fk_salary_pos` (`position_id`),
+  KEY `fk_salary_user` (`created_by_user_id`),
+  KEY `idx_change_type` (`change_type`),
+  KEY `idx_effective_date` (`effective_date`),
+  KEY `idx_is_active` (`is_active`),
+  CONSTRAINT `fk_salary_emp` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT `fk_salary_pos` FOREIGN KEY (`position_id`) REFERENCES `positions` (`id`) ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT `fk_salary_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
