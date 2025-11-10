@@ -96,6 +96,27 @@ try {
                 (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
             }
             break;
+        case 'salary':
+            $controller = new SalaryController(); 
+            
+            if ($method === 'GET' && isset($_GET['employee_id'])) {
+                // Kiểm tra xem có phải yêu cầu lấy 'history' không
+                if (isset($_GET['history']) && $_GET['history'] === 'true') {
+                    // GET ...?resource=salary&employee_id=...&history=true
+                    $controller->getHistory($_GET['employee_id']);
+                } else {
+                    // GET ...?resource=salary&employee_id=... (Lấy hồ sơ lương)
+                    $controller->getSalaryProfile($_GET['employee_id']);
+                }
+            }
+            elseif ($method === 'POST') {
+                // POST ...?resource=salary (Body chứa thông tin điều chỉnh)
+                $controller->handleAddAdjustment();
+            }
+            else {
+                (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ cho "salary".', 405);
+            }
+            break;
 
         default:
             (new BaseController())->sendError('Resource not found', 404);

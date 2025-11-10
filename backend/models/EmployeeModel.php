@@ -117,16 +117,16 @@ class EmployeeModel extends BaseModel {
                     e.hire_date, 
                     p.title as position_title, 
                     d.name as department_name
-                  FROM " . $this->tableName . " AS e
-                  LEFT JOIN positions AS p ON e.position_id = p.id
-                  LEFT JOIN departments AS d ON p.department_id = d.id
-                  WHERE 
+                FROM " . $this->tableName . " AS e
+                LEFT JOIN positions AS p ON e.position_id = p.id
+                LEFT JOIN departments AS d ON p.department_id = d.id
+                WHERE 
                     e.is_active = 1
-                  ORDER BY 
+                ORDER BY 
                     " . $sortBy . " " . $sortOrder . "
-                  LIMIT 
+                LIMIT 
                     :limit 
-                  OFFSET 
+                OFFSET 
                     :offset";
         
         $stmt = $this->pdo->prepare($query);
@@ -166,8 +166,8 @@ class EmployeeModel extends BaseModel {
         // 1. Khởi tạo câu truy vấn và mảng tham số
         // Chúng ta JOIN ngay từ đầu để có thể lọc theo phòng ban và vị trí
         $queryBase = "FROM " . $this->tableName . " AS e
-                      LEFT JOIN positions AS p ON e.position_id = p.id
-                      LEFT JOIN departments AS d ON p.department_id = d.id";
+                    LEFT JOIN positions AS p ON e.position_id = p.id
+                    LEFT JOIN departments AS d ON p.department_id = d.id";
         
         $whereClauses = ["e.is_active = 1"]; // Luôn bắt đầu với xóa mềm
         $params = [];
@@ -233,6 +233,23 @@ class EmployeeModel extends BaseModel {
             'data' => $dataStmt->fetchAll()
         ];
     }
+
+    /**
+     * Lấy thông tin chi tiết của MỘT nhân viên theo ID.
+     * @param string $id ID của nhân viên cần tìm.
+     * @return array|null Dữ liệu nhân viên hoặc null nếu không tìm thấy.
+     */
+    public function getById(string $id): ?array {
+        // Lấy tất cả thông tin (bao gồm cả position_id) và phải đang active
+        $query = "SELECT * FROM " . $this->tableName . " WHERE id = :id AND is_active = 1";
+        
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute([':id' => $id]); 
+        
+        $result = $stmt->fetch(); 
+        
+        return $result === false ? null : $result;
+    }
 }
 ?>
-```eof
+
