@@ -88,8 +88,8 @@ class EmployeeController extends BaseController {
         $data = $this->getRequestBody();
 
         // 1. Validation cơ bản
-        if (empty($data->name) || empty($data->hireDate) || empty($data->positionId)) {
-            $this->sendError('Vui lòng cung cấp đầy đủ Tên, Ngày vào làm, và Vị trí.', 400);
+        if (empty($data->name) || empty($data->hireDate) || empty($data->positionId) || empty($data->shiftId)) {
+            $this->sendError('Vui lòng cung cấp đầy đủ Tên, Ngày vào làm, Vị trí, và Ca làm việc.', 400);
             return;
         }
 
@@ -122,8 +122,8 @@ class EmployeeController extends BaseController {
     public function updateEmployee(string $id): void {
         $data = $this->getRequestBody();
         
-        if (empty($id) || empty($data->name) || empty($data->hireDate) || empty($data->positionId)) {
-            $this->sendError('ID, Tên, Ngày vào làm, và Vị trí là bắt buộc.', 400);
+        if (empty($id) || empty($data->name) || empty($data->hireDate) || empty($data->positionId) || empty($data->shiftId)) {
+            $this->sendError('ID, Tên, Ngày vào làm, Vị trí và Ca làm việc là bắt buộc.', 400);
             return;
         }
 

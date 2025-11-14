@@ -1,5 +1,8 @@
 <?php
-// backend/api.php - Cổng vào API duy nhất
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+date_default_timezone_set('Asia/Ho_Chi_Minh');// Đặt múi giờ mặc định
 
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -115,6 +118,58 @@ try {
             }
             else {
                 (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ cho "salary".', 405);
+            }
+            break;
+        case 'attendance':
+            $controller = new AttendanceController(); // Autoloader sẽ nạp file
+
+            if ($method === 'POST') {
+                // POST ...?resource=attendance (Body: {"employee_id": "..."})
+                // Dùng để Check In
+                $controller->checkIn();
+            }
+            elseif ($method === 'PUT') {
+                // PUT ...?resource=attendance (Body: {"employee_id": "..."})
+                // Dùng để Check Out
+                $controller->checkOut();
+            }
+            elseif ($method === 'GET' && isset($_GET['employee_id'], $_GET['month'], $_GET['year'])) {
+                // GET ...?resource=attendance&employee_id=...&month=...&year=...
+                // Dùng để lấy Thống kê Tháng
+                $controller->getMonthlySummary();
+            }
+            else {
+                (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ cho "attendance".', 405);
+            }
+            break;
+        case 'shifts':
+            $controller = new ShiftController(); // Autoloader sẽ nạp file
+            
+            // Chuyển đổi $id (chuỗi từ URL) thành số nguyên
+            $numeric_id = $id ? (int)$id : 0; 
+
+            if ($method === 'GET' && $id === null) {
+                // GET .../api.php?resource=shifts
+                $controller->listAll();
+            }
+            // (Bạn có thể thêm GET by ID nếu cần)
+            // elseif ($method === 'GET' && $id !== null) {
+            //     $controller->getById($numeric_id);
+            // }
+            elseif ($method === 'POST') {
+                // POST .../api.php?resource=shifts
+                $controller->add();
+            } 
+            elseif ($method === 'PUT' && $id !== null) {
+                // PUT .../api.php?resource=shifts&id=1
+                $controller->update($numeric_id);
+            } 
+            elseif ($method === 'DELETE' && $id !== null) {
+                // DELETE .../api.php?resource=shifts&id=1
+                $controller->softDelete($numeric_id);
+            } 
+            else {
+                (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
             }
             break;
 
