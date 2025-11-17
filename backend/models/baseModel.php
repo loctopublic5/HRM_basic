@@ -13,5 +13,14 @@ abstract class BaseModel {
         // Lấy instance Singleton của Database, sau đó lấy kết nối PDO
         $this->pdo = Database::getInstance()->getConnection();
     }
+/**
+     * [HÀM MỚI]
+     * Cung cấp quyền truy cập vào kết nối PDO cho các Controller
+     * để thực hiện các giao dịch (transactions).
+     * @return PDO
+     */
+    public function getPdo(): PDO {
+        return $this->pdo;
+    }
 }
 ?>

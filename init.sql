@@ -209,3 +209,36 @@ CREATE TABLE `salary_history` (
   CONSTRAINT `fk_salary_pos` FOREIGN KEY (`position_id`) REFERENCES `positions` (`id`) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT `fk_salary_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- ----------------------------
+-- Bảng 'leave_requests'
+-- ----------------------------
+DROP TABLE IF EXISTS `leave_requests`;
+CREATE TABLE `leave_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `employee_id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  
+  -- Kiểu ENUM cho Loại nghỉ phép
+  `leave_type` enum('full_day','half_day_morning','half_day_afternoon','sick') COLLATE utf8mb4_unicode_ci NOT NULL,
+  
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `reason` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  
+  -- Kiểu ENUM cho Trạng thái
+  `status` enum('pending','approved','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  
+  `approved_by_user_id` int(11) DEFAULT NULL COMMENT 'ID của admin/manager đã duyệt',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Cho phép xóa mềm (ẩn yêu cầu)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  
+  PRIMARY KEY (`id`),
+  KEY `fk_leave_emp` (`employee_id`),
+  KEY `fk_leave_approver` (`approved_by_user_id`),
+  KEY `idx_leave_type` (`leave_type`),
+  KEY `idx_leave_status` (`status`),
+  KEY `idx_leave_start_date` (`start_date`),
+  KEY `idx_leave_is_active` (`is_active`),
+  
+  CONSTRAINT `fk_leave_emp` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+  CONSTRAINT `fk_leave_approver` FOREIGN KEY (`approved_by_user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -196,5 +196,55 @@ class AttendanceModel extends BaseModel {
             "total_work_days" => $totalWorkDays
         ];
     }
+/**
+     * Tạo một bản ghi chấm công "được miễn" (Nghỉ phép) cho một nhân viên.
+     * Hàm này sẽ được LeaveController gọi.
+     * @param string $employeeId
+     * @param string $date (Định dạng 'Y-m-d')
+     * @param int $shiftId
+     * @param string $leaveType (ví dụ: 'full_day', 'half_day_morning')
+     * @return bool
+     * @throws Exception
+     */
+    public function createExcusedAbsenceLog(string $employeeId, string $date, int $shiftId, string $leaveType): bool {
+        
+        // 1. Lấy chi tiết ca làm để biết giờ chuẩn
+        $shift = $this->getShiftDetails($shiftId);
+        if (!$shift) {
+            throw new Exception("Không tìm thấy chi tiết ca làm (ID: $shiftId) để tạo log nghỉ phép.");
+        }
+        $standardHours = (float)$shift['total_standard_hours']; // ví dụ: 8.0
+
+        // 2. Tính toán work_duration dựa trên loại nghỉ phép
+        $workDuration = 0.0;
+        switch ($leaveType) {
+            case 'full_day':
+            case 'sick':
+                $workDuration = $standardHours; // 8.0 giờ
+                break;
+            case 'half_day_morning':
+            case 'half_day_afternoon':
+                $workDuration = $standardHours / 2; // 4.0 giờ
+                break;
+            default:
+                throw new Exception("Loại nghỉ phép không hợp lệ: $leaveType");
+        }
+
+        // 3. Tạo bản ghi (lưu ý: không có check_in/check_out)
+        // Chúng ta vẫn lưu `shift_id` và `date` để hàm SUM/GROUP BY (getMonthlyAttendanceSummary)
+        // có thể tìm thấy và cộng dồn giờ làm này một cách chính xác.
+        $query = "INSERT INTO " . $this->tableName . " 
+                    (employee_id, shift_id, date, status, work_duration, is_active) 
+                VALUES 
+                    (:employee_id, :shift_id, :date, 'Hợp lệ', :work_duration, 1)";
+        
+        $stmt = $this->pdo->prepare($query);
+        return $stmt->execute([
+            ':employee_id' => $employeeId,
+            ':shift_id' => $shiftId,
+            ':date' => $date,
+            ':work_duration' => $workDuration
+        ]);
+    }
 }
 ?>

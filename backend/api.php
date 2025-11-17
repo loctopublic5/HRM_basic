@@ -51,6 +51,10 @@ try {
 
     $method = $_SERVER['REQUEST_METHOD'];
 
+    // --- [DEBUG 1] Kiểm tra xem PHP nhận được lệnh gì ---
+    // Nếu chạy trên Postman, bạn sẽ thấy dòng này hiện ra thay vì JSON
+    //var_dump("DEBUG 1: Resource = " . $resource);
+
     // Routing Logic
     switch ($resource) {
         
@@ -77,99 +81,61 @@ try {
             else (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
             break;
         case 'employees':
-            $controller = new EmployeeController(); // Autoloader sẽ nạp file
-
+            $controller = new EmployeeController();
             if ($method === 'GET') {
-                if (isset($_GET['name']) || isset($_GET['deptId']) || isset($_GET['posId'])) {
-                    $controller->searchEmployees();
-                } else {
-                    $controller->listEmployees();
-                }
+                if (isset($_GET['name']) || isset($_GET['deptId']) || isset($_GET['posId'])) $controller->searchEmployees();
+                else $controller->listEmployees();
             }
-            elseif ($method === 'POST') {
-                $controller->addEmployee();
-            } 
-            elseif ($method === 'PUT' && $id !== null) {
-                $controller->updateEmployee($id);
-            } 
-            elseif ($method === 'DELETE' && $id !== null) {
-                $controller->deleteEmployee($id);
-            } 
-            else {
-                (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
-            }
+            elseif ($method === 'POST') $controller->addEmployee();
+            elseif ($method === 'PUT' && $id !== null) $controller->updateEmployee($id);
+            elseif ($method === 'DELETE' && $id !== null) $controller->deleteEmployee($id);
+            else (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
             break;
         case 'salary':
-            $controller = new SalaryController(); 
-            
+            $controller = new SalaryController();
             if ($method === 'GET' && isset($_GET['employee_id'])) {
-                // Kiểm tra xem có phải yêu cầu lấy 'history' không
-                if (isset($_GET['history']) && $_GET['history'] === 'true') {
-                    // GET ...?resource=salary&employee_id=...&history=true
-                    $controller->getHistory($_GET['employee_id']);
-                } else {
-                    // GET ...?resource=salary&employee_id=... (Lấy hồ sơ lương)
-                    $controller->getSalaryProfile($_GET['employee_id']);
-                }
+                if (isset($_GET['history']) && $_GET['history'] === 'true') $controller->getHistory($_GET['employee_id']);
+                else $controller->getSalaryProfile($_GET['employee_id']);
             }
-            elseif ($method === 'POST') {
-                // POST ...?resource=salary (Body chứa thông tin điều chỉnh)
-                $controller->handleAddAdjustment();
-            }
-            else {
-                (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ cho "salary".', 405);
-            }
+            elseif ($method === 'POST') $controller->handleAddAdjustment();
+            else (new BaseController())->sendError('Method Not Allowed', 405);
             break;
         case 'attendance':
-            $controller = new AttendanceController(); // Autoloader sẽ nạp file
-
-            if ($method === 'POST') {
-                // POST ...?resource=attendance (Body: {"employee_id": "..."})
-                // Dùng để Check In
-                $controller->checkIn();
-            }
-            elseif ($method === 'PUT') {
-                // PUT ...?resource=attendance (Body: {"employee_id": "..."})
-                // Dùng để Check Out
-                $controller->checkOut();
-            }
-            elseif ($method === 'GET' && isset($_GET['employee_id'], $_GET['month'], $_GET['year'])) {
-                // GET ...?resource=attendance&employee_id=...&month=...&year=...
-                // Dùng để lấy Thống kê Tháng
-                $controller->getMonthlySummary();
-            }
-            else {
-                (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ cho "attendance".', 405);
-            }
+            $controller = new AttendanceController();
+            if ($method === 'POST') $controller->checkIn();
+            elseif ($method === 'PUT') $controller->checkOut();
+            elseif ($method === 'GET' && isset($_GET['employee_id'], $_GET['month'], $_GET['year'])) $controller->getMonthlySummary();
+            else (new BaseController())->sendError('Method Not Allowed', 405);
             break;
         case 'shifts':
-            $controller = new ShiftController(); // Autoloader sẽ nạp file
-            
-            // Chuyển đổi $id (chuỗi từ URL) thành số nguyên
+            $controller = new ShiftController();
             $numeric_id = $id ? (int)$id : 0; 
-
-            if ($method === 'GET' && $id === null) {
-                // GET .../api.php?resource=shifts
-                $controller->listAll();
+            if ($method === 'GET' && $id === null) $controller->listAll();
+            elseif ($method === 'POST') $controller->add();
+            elseif ($method === 'PUT' && $id !== null) $controller->update($numeric_id);
+            elseif ($method === 'DELETE' && $id !== null) $controller->softDelete($numeric_id);
+            else (new BaseController())->sendError('Method Not Allowed', 405);
+            break;
+        case 'leaves':
+            $controller = new LeaveController();
+            if ($method === 'POST') {
+                $controller->handleRequestLeave();
             }
-            // (Bạn có thể thêm GET by ID nếu cần)
-            // elseif ($method === 'GET' && $id !== null) {
-            //     $controller->getById($numeric_id);
-            // }
-            elseif ($method === 'POST') {
-                // POST .../api.php?resource=shifts
-                $controller->add();
-            } 
-            elseif ($method === 'PUT' && $id !== null) {
-                // PUT .../api.php?resource=shifts&id=1
-                $controller->update($numeric_id);
-            } 
-            elseif ($method === 'DELETE' && $id !== null) {
-                // DELETE .../api.php?resource=shifts&id=1
-                $controller->softDelete($numeric_id);
-            } 
+            elseif ($method === 'GET' && isset($_GET['pending'])) {
+                $controller->getPendingRequests();
+            }
+            elseif ($method === 'GET' && isset($_GET['employee_id'])) {
+                $controller->getEmployeeHistory($_GET['employee_id']);
+            }
+            elseif ($method === 'PUT' && $id !== null && isset($_GET['action'])) {
+                $action = $_GET['action'];
+                $numeric_id = (int)$id;
+                if ($action === 'approve') $controller->handleApproveRequest($numeric_id);
+                elseif ($action === 'reject') $controller->handleRejectRequest($numeric_id);
+                else (new BaseController())->sendError('Action invalid', 400);
+            }
             else {
-                (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
+                (new BaseController())->sendError('Method Not Allowed for leaves', 405);
             }
             break;
 
