@@ -41,30 +41,39 @@ function setupLoginForm() {
     let isSubmitting = false;
 
     // Gắn listener một lần duy nhất
-    loginForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (isSubmitting) return;
+    loginForm.onsubmit = async (event) => {
+        event.preventDefault();
+        if (isSubmitting) return;
 
-    isSubmitting = true;
-    submitButton.disabled = true;
+        isSubmitting = true;
         submitButton.disabled = true;
         submitButton.textContent = 'Đang xử lý...';
-        loginError.textContent = '';
+        loginError.textContent = ''; // Xóa lỗi cũ
 
         const username = event.target.username.value;
         const password = event.target.password.value;
         
-        const success = await Auth.login(username, password);
+        try {
+            // 1. Gọi hàm login bất đồng bộ mới
+            // Hàm này (trong authModule) sẽ tự động gọi apiPost và saveUserSession
+            const user = await Auth.login(username, password);
 
-        if (success) {
-            initializeApp();
-        } else {
-            loginError.textContent = 'Tên đăng nhập hoặc mật khẩu không đúng.';
+            // 2. Nếu thành công (không có lỗi nào được ném ra)
+            console.log('Đăng nhập thành công:', user.username);
+            initializeApp(); // Khởi động lại ứng dụng ở trạng thái đã đăng nhập
+
+        } catch (error) {
+            // 3. Nếu thất bại (apiHelper ném lỗi, ví dụ: 401, 500)
+            console.error('Lỗi đăng nhập:', error.message);
+            // Hiển thị lỗi trả về từ server (ví dụ: "Tên đăng nhập hoặc mật khẩu không đúng.")
+            loginError.textContent = error.message;
+            
+            // 4. Khôi phục lại form
             isSubmitting = false;
             submitButton.disabled = false;
             submitButton.textContent = 'Đăng nhập';
         }
-    });
+    };
 }
 
 /**
@@ -96,9 +105,14 @@ function setupDashboard() {
     // Gắn sự kiện cho nút đăng xuất
     
     if (sidebarLogoutBtn) {
-        sidebarLogoutBtn.addEventListener('click', () => {
+        sidebarLogoutBtn.addEventListener('click', async () => { // <-- SỬA LÀ 'sidebarLogoutBtn'
             if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-                Auth.logout();
+                try {
+                    await Auth.logout(); 
+                } catch (error) {
+                    console.error('Lỗi khi gọi API logout:', error.message);
+                    Auth.clearUserSession(); 
+                }
                 initializeApp();
             }
         });

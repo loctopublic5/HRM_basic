@@ -37,7 +37,7 @@ CREATE TABLE `users` (
 
 -- Mật khẩu của admin là 'admin123' (đã được hash bằng bcrypt)
 INSERT INTO `users` (`username`, `password`, `role`, `is_active`) VALUES
-('admin', '$2y$10$nmeOysp/1a.gz0KCbnOdCOdWk2KE00qMYO0srg6GO18s.TdZjfU7q', 'admin', 1);
+('admin', '$2y$10$GTa4lodrrKRYUBl1Oc/0cOFei405gk25aPAMwaQu6f8lkUlifcA5m', 'admin', 1);
 
 -- ----------------------------
 -- Bảng: departments (Phòng ban)
