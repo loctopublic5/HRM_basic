@@ -24,7 +24,7 @@ class EmployeeModel extends BaseModel {
         // 2. Chuẩn bị câu truy vấn
         $query = "INSERT INTO " . $this->tableName . " 
                     (id, name, hire_date, position_id, shift_id, is_active) 
-                  VALUES 
+                VALUES 
                     (:id, :name, :hire_date, :position_id, :shift_id, 1)";
         
         $stmt = $this->pdo->prepare($query);

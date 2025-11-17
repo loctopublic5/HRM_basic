@@ -138,6 +138,17 @@ try {
                 (new BaseController())->sendError('Method Not Allowed for leaves', 405);
             }
             break;
+        case 'auth':
+            $controller = new AuthController();
+            if ($method === 'POST' && isset($_GET['action']) && $_GET['action']==='login'){
+                $controller->handleLogin();
+            } elseif ($method === 'POST' && isset($_GET['action']) && $_GET['action']==='logout'){
+                $controller->handleLogout();
+            }
+            else{
+                (new BaseController())->sendError('Phương thức hoặc hành động (action) không hợp lệ cho "auth".', 405);
+            }
+        
 
         default:
             (new BaseController())->sendError('Resource not found', 404);

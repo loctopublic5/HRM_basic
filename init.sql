@@ -16,32 +16,28 @@ DROP TABLE IF EXISTS `leave_requests`;
 DROP TABLE IF EXISTS `attendance_logs`;
 DROP TABLE IF EXISTS `employees`;
 DROP TABLE IF EXISTS `positions`;
-DROP TABLE IF EXISTS `work_shifts`; -- (Bảng mới)
+DROP TABLE IF EXISTS `work_shifts`; 
 DROP TABLE IF EXISTS `departments`;
 DROP TABLE IF EXISTS `users`;
 
 -- ----------------------------
--- Bảng: users (Quản lý)
+-- Bước 1: Tạo Bảng 'users'
 -- ----------------------------
 CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `role` enum('admin','manager') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'manager',
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `phone_number` varchar(15) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mật khẩu đã được Hash (không lưu plaintext)',
+  `role` enum('admin','manager','employee') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'employee',
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_username_unique` (`username`),
-  UNIQUE KEY `idx_email_unique` (`email`),
+  UNIQUE KEY `idx_username` (`username`),
   KEY `idx_is_active` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Mật khẩu hash: 'admin123@' và 'mana123@' (sử dụng SHA-256 như bạn yêu cầu)
-INSERT INTO `users` (`username`, `password_hash`, `role`, `email`) VALUES
-('admin', 'c1c9c439f04d7f5511b8a531a7b45f3c1f3c3b01a1c9c4403d3c3b01a1c9c440', 'admin', 'admin@example.com'),
-('manager1', 'a81bacb870e283116a30c514578badd066dfc14578badd066dfc14578badd06', 'manager', 'manager1@example.com');
+-- Mật khẩu của admin là 'admin123' (đã được hash bằng bcrypt)
+INSERT INTO `users` (`username`, `password`, `role`, `is_active`) VALUES
+('admin', '$2y$10$nmeOysp/1a.gz0KCbnOdCOdWk2KE00qMYO0srg6GO18s.TdZjfU7q', 'admin', 1);
 
 -- ----------------------------
 -- Bảng: departments (Phòng ban)
