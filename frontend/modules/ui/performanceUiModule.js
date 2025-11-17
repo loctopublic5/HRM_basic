@@ -1,6 +1,6 @@
 import { getAllEmployees } from './employeeDbModule.js';
-import { addReview, getPerformanceStats } from './performanceModule.js';
-import { renderPagination, handlePaginationClick } from './paginationComponent.js';
+import { addReview, getPerformanceStats } from '../services/performanceModule.js';
+import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let currentRating = 0;

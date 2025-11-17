@@ -1,13 +1,13 @@
 // --- Imports ---
-import * as Auth from './modules/authModule.js';
-import * as EmployeeManagementUI from './modules/employeeManagementModule.js';
-import * as DepartmentUI from './modules/departmentUiModule.js';
-import * as PositionUI from './modules/positionUiModule.js';
-import * as AttendanceUI from './modules/attendanceUiModule.js';
-import * as SalaryUI from './modules/salaryUiModule.js';
-import * as LeaveUI from './modules/leaveUiModule.js';
-import * as PerformanceUI from './modules/performanceUiModule.js';
-import * as searchUi from './modules/searchUiModule.js';
+import * as Auth from './modules/services/authModule.js';
+import * as EmployeeManagementUI from './modules/ui/employeeManagementModule.js';
+import * as DepartmentUI from './modules/ui/departmentUiModule.js';
+import * as PositionUI from './modules/ui/positionUiModule.js';
+import * as AttendanceUI from './modules/ui/attendanceUiModule.js';
+import * as SalaryUI from './modules/ui/salaryUiModule.js';
+import * as LeaveUI from './modules/ui/leaveUiModule.js';
+import * as PerformanceUI from './modules/ui/performanceUiModule.js';
+import * as searchUi from './modules/ui/searchUiModule.js';
 
 
 let loginView, appContainer, mainContent; 

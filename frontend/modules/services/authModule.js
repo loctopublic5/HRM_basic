@@ -1,6 +1,4 @@
-
-// Import các hàm apiPost và apiGet từ "trợ lý" API
-import { apiPost } from './apiHelper.js';
+import { apiPost } from '../helper/apiHelper.js';
 
 const USER_SESSION_KEY = 'hrm_user_session';
 

@@ -1,8 +1,8 @@
-import { getAllDepartments } from './departmentModule.js';
+import { getAllDepartments } from '../services/departmentModule.js';
 import { getAllPositions, getPositionById, getPositionsByDepartmentId } from './positionModule.js';
 import { getAllEmployees, getEmployeeById,addEmployee,updateEmployee,deleteEmployee} from './employeeDbModule.js';
-import { renderPagination, handlePaginationClick } from './paginationComponent.js';
-import { isNotEmpty, isNameUnique } from './validators.js';
+import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
+import { isNotEmpty, isNameUnique } from '../helper/validators.js';
 import { calculateSalaryDetails } from './salaryModule.js';
 
 // --- Biến trạng thái của module ---

@@ -1,11 +1,11 @@
-import { getAllDepartments } from './departmentModule.js';
+import { getAllDepartments } from '../services/departmentModule.js';
 import { 
     getAllPositions, 
     addPosition,
     updatePosition,
     deletePosition
 } from './positionModule.js';
-import { renderPagination, handlePaginationClick } from './paginationComponent.js';
+import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let isEditing = false;

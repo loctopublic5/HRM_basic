@@ -1,6 +1,6 @@
-import { getAllEmployees } from './employeeDbModule.js';
+import { getAllEmployees } from '../services/employeeDbModule.js';
 import { addLeaveRequest, getAllLeaveRequests, updateLeaveStatus, getLeaveBalance } from './leaveModule.js';
-import { renderPagination, handlePaginationClick } from './paginationComponent.js';
+import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let currentPage = 1;

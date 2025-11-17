@@ -1,8 +1,8 @@
 // === modules/attendanceUiModule.js (Phiên bản Giao diện Nâng cao) ===
 
 import { getAllEmployees } from './employeeDbModule.js';
-import { checkIn, checkOut, getTodaysAttendanceForEmployee } from './attendanceModule.js';
-import { renderPagination, handlePaginationClick } from './paginationComponent.js';
+import { checkIn, checkOut, getTodaysAttendanceForEmployee } from '../services/attendanceModule.js';
+import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO PHÂN TRANG ---
 let currentPage = 1;

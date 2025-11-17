@@ -1,9 +1,9 @@
-import { getAllDepartments } from './departmentModule.js';
-import { getAllPositions } from './positionModule.js';
+import { getAllDepartments } from '../services/departmentModule.js';
+import { getAllPositions } from '../services/positionModule.js';
 import { calculateSalaryDetails } from './salaryModule.js';
-import { renderPagination, handlePaginationClick } from './paginationComponent.js';
+import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
 // Import các hàm từ service mới
-import { getAutocompleteSuggestions, searchEmployees } from './searchModule.js'; 
+import { getAutocompleteSuggestions, searchEmployees } from '../services/searchModule.js'; 
 
 // --- Biến trạng thái cho Module ---
 let searchResults = []; // Lưu kết quả tìm kiếm đầy đủ (trước khi phân trang)

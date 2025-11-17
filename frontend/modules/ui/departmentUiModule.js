@@ -1,13 +1,13 @@
-import { getPositionsByDepartmentId, getPositionById } from './positionModule.js';
-import { getAllEmployees } from './employeeDbModule.js';
+import { getPositionsByDepartmentId, getPositionById } from '../services/positionModule.js';
+import { getAllEmployees } from '../services/employeeDbModule.js';
 import { 
     getAllDepartments, 
     addDepartment,
     updateDepartment,
     deleteDepartment,
     getDepartmentById
-} from './departmentModule.js';
-import { renderPagination, handlePaginationClick } from './paginationComponent.js';
+} from '../services/departmentModule.js';
+import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let currentView = 'list';
