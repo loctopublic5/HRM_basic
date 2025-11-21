@@ -7,7 +7,7 @@ import * as AttendanceUI from './modules/ui/attendanceUiModule.js';
 import * as SalaryUI from './modules/ui/salaryUiModule.js';
 import * as LeaveUI from './modules/ui/leaveUiModule.js';
 import * as PerformanceUI from './modules/ui/performanceUiModule.js';
-import * as searchUi from './modules/ui/searchUiModule.js';
+
 
 
 let loginView, appContainer, mainContent; 
@@ -160,27 +160,6 @@ function navigate(module) {
     switch (module) {
         case 'employeeManagement':
             EmployeeManagementUI.render(mainContent);
-            break;
-        case 'search':
-            searchUi.render(mainContent);
-            break;
-        case 'managePositions': 
-            PositionUI.render(mainContent);
-            break;
-        case 'manageDepartments':
-            DepartmentUI.render(mainContent);
-            break;
-        case 'attendance':
-            AttendanceUI.render(mainContent);
-            break;
-        case 'salaryManagement':
-            SalaryUI.render(mainContent);
-            break;
-        case 'leaveManagement':
-            LeaveUI.render(mainContent);
-            break;
-        case "performanceManagement":
-            PerformanceUI.render(mainContent);
             break;
         default:
             mainContent.innerHTML = '<h2>Module chưa được triển khai</h2>';

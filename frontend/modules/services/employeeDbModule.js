@@ -1,110 +1,65 @@
-const EMPLOYEES_STORAGE_KEY = 'hrm_employees';
 
-// Dữ liệu mẫu để khởi tạo nếu localStorage trống
-const mockEmployees = [
-    { 
-        id: `EMP${Date.now()}`, 
-        name: 'Nguyễn Văn A', 
-        departmentId: 'dept_it', 
-        positionId: 'pos_dev', 
-        hireDate: '2023-01-15' 
-    },
-    { 
-        id: `EMP${Date.now() + 1}`, 
-        name: 'Trần Thị B', 
-        departmentId: 'dept_hr', 
-        positionId: 'pos_recruiter', 
-        hireDate: '2022-08-20' 
-    },
-    { 
-        id: `EMP${Date.now() + 2}`, 
-        name: 'Lê Văn C', 
-        departmentId: 'dept_mkt', 
-        positionId: 'pos_manager', 
-        hireDate: '2021-05-10' 
-    },
-];
+import { apiGet, apiPost, apiPut, apiDelete } from '../helpers/apiHelper.js';
 
 /**
- * Lấy tất cả nhân viên từ localStorage.
- * @returns {Array} Mảng các đối tượng nhân viên.
+ * Lấy danh sách nhân viên (có phân trang, sắp xếp).
+ * @param {number} page
+ * @param {number} limit
+ * @param {string} sortBy
+ * @param {string} sortOrder
+ * @returns {Promise<object>} Đối tượng chứa { data, pagination }
  */
-function getAllEmployees() {
-    const data = localStorage.getItem(EMPLOYEES_STORAGE_KEY);
-    // Nếu không có dữ liệu, trả về mảng rỗng
-    // JSON.parse chuyển đổi một chuỗi JSON thành một đối tượng JavaScript
-    return data ? JSON.parse(data) : [];
+export async function getEmployees(page = 1, limit = 10, sortBy = 'name', sortOrder = 'asc') {
+    // Gọi GET ...?resource=employees&page=1&limit=10...
+    return await apiGet('employees', { page, limit, sortBy, sortOrder });
 }
 
 /**
- * Lưu một mảng nhân viên vào localStorage.
- * @param {Array} employees Mảng các đối tượng nhân viên cần lưu.
+ * Tìm kiếm nhân viên.
+ * @param {object} criteria - { name, deptId, posId }
+ * @returns {Promise<object>} Đối tượng chứa { data, pagination }
  */
-function saveEmployees(employees) {
-    // JSON.stringify chuyển đổi một đối tượng JavaScript thành chuỗi JSON
-    localStorage.setItem(EMPLOYEES_STORAGE_KEY, JSON.stringify(employees));
+export async function searchEmployees(criteria) {
+    // criteria = { name: "A", deptId: "dept_it", posId: "" }
+    // apiGet sẽ tự động bỏ qua các key có giá trị rỗng hoặc null
+    return await apiGet('employees', criteria);
 }
 
 /**
- * Lấy thông tin một nhân viên bằng ID.
- * @param {string} id ID của nhân viên cần tìm.
- * @returns {Object|null} Đối tượng nhân viên hoặc null nếu không tìm thấy.
+ * Lấy chi tiết một nhân viên.
+ * (Chúng ta sẽ cần hàm này cho form Sửa)
+ * @param {string} id
+ * @returns {Promise<object>}
  */
-function getEmployeeById(id) {
-    const employees = getAllEmployees();
-    return employees.find(emp => emp.id === id) || null;
+export async function getEmployeeById(id) {
+    // Gọi GET ...?resource=employees&id=...
+    return await apiGet('employees', { id });
 }
 
-function addEmployee(employeeData) {
-    const employees = getAllEmployees();
-    const newEmployee = {
-        id: `EMP_${Date.now()}`,
-        name: employeeData.name,
-        departmentId: employeeData.departmentId,
-        positionId: employeeData.positionId,
-        hireDate: employeeData.hireDate,
-        permanentAllowance: 0, // Luôn bắt đầu bằng 0
-    };
-    employees.push(newEmployee);
-    saveEmployees(employees);
+/**
+ * Tạo nhân viên mới.
+ * @param {object} data - { name, hireDate, positionId, shift_id }
+ * @returns {Promise<object>}
+ */
+export async function createEmployee(data) {
+    return await apiPost('employees', data);
 }
 
-// --- HÀM MỚI ---
-function updateEmployee(id, updates) {
-    const employees = getAllEmployees();
-    const index = employees.findIndex(emp => emp.id === id);
-    if (index !== -1) {
-        // Chỉ cho phép cập nhật các trường này từ form quản lý nhân viên
-        const allowedUpdates = {
-            name: updates.name,
-            departmentId: updates.departmentId,
-            positionId: updates.positionId,
-            hireDate: updates.hireDate,
-        };
-        employees[index] = { ...employees[index], ...allowedUpdates };
-        saveEmployees(employees);
-    }
+/**
+ * Cập nhật nhân viên.
+ * @param {string} id
+ * @param {object} data
+ * @returns {Promise<object>}
+ */
+export async function updateEmployee(id, data) {
+    return await apiPut('employees', id, data);
 }
 
-// --- HÀM MỚI ---
-function deleteEmployee(id) {
-    let employees = getAllEmployees();
-    employees = employees.filter(emp => emp.id !== id);
-    saveEmployees(employees);
+/**
+ * Xóa mềm nhân viên.
+ * @param {string} id
+ * @returns {Promise<object>}
+ */
+export async function deleteEmployee(id) {
+    return await apiDelete('employees', id);
 }
-
-// --- Logic Khởi tạo ---
-// IIFE (Immediately Invoked Function Expression) để chạy logic này ngay lập tức khi module được load
-(function init() {
-    const employees = getAllEmployees();
-    // Nếu không có nhân viên nào trong storage, hãy khởi tạo với dữ liệu mẫu
-    if (employees.length === 0) {
-        saveEmployees(mockEmployees);
-        console.log('Khởi tạo dữ liệu nhân viên mẫu thành công!');
-    }
-})();
-
-
-// Export các hàm để các module khác có thể sử dụng
-export { getAllEmployees, saveEmployees, getEmployeeById
-, addEmployee, updateEmployee, deleteEmployee};

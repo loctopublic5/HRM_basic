@@ -1,6 +1,6 @@
-import { getAllEmployees } from './employeeDbModule.js';
+import { getEmployees } from '../services/employeeDbModule.js';
 import { addReview, getPerformanceStats } from '../services/performanceModule.js';
-import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
+import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let currentRating = 0;
@@ -13,7 +13,7 @@ const ITEMS_PER_PAGE = 10;
  * Hàm này CHỈ làm nhiệm vụ vẽ lại nội dung động của trang.
  */
 function renderPerformancePage(container) {
-    const employees = getAllEmployees();
+    const employees = getEmployees();
     const { overallAverage, employeeStats } = getPerformanceStats(employees);
 
     // BƯỚC 1: SẮP XẾP TOÀN BỘ DỮ LIỆU TRƯỚC
@@ -122,7 +122,7 @@ function bindEvents(container) {
         const employeeId = row.dataset.employeeId;
         
         // Lấy lại dữ liệu thống kê mới nhất để có danh sách feedback
-        const allStats = getPerformanceStats(getAllEmployees()).employeeStats;
+        const allStats = getPerformanceStats(getEmployees()).employeeStats;
         const employeeStat = allStats.find(s => s.employeeId === employeeId);
 
         if (employeeStat) {
@@ -137,7 +137,7 @@ function bindEvents(container) {
         }
 
         // Xử lý click phân trang
-        const totalPages = Math.ceil(getPerformanceStats(getAllEmployees()).employeeStats.length / ITEMS_PER_PAGE) || 1;
+        const totalPages = Math.ceil(getPerformanceStats(getEmployees()).employeeStats.length / ITEMS_PER_PAGE) || 1;
         handlePaginationClick(event, { currentPage, totalPages }, (newPage) => {
             currentPage = newPage;
             renderPerformancePage(container);

@@ -1,8 +1,6 @@
-// === modules/attendanceUiModule.js (Phiên bản Giao diện Nâng cao) ===
-
-import { getAllEmployees } from './employeeDbModule.js';
+import { getEmployees } from '../services/employeeDbModule.js';
 import { checkIn, checkOut, getTodaysAttendanceForEmployee } from '../services/attendanceModule.js';
-import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
+import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO PHÂN TRANG ---
 let currentPage = 1;
@@ -13,7 +11,7 @@ const ITEMS_PER_PAGE = 10;
  * @param {HTMLElement} container 
  */
 function renderAttendancePage(container) {
-    const allEmployees = getAllEmployees();
+    const allEmployees = getEmployees();
 
     const totalPages = Math.ceil(allEmployees.length / ITEMS_PER_PAGE) || 1;
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -108,7 +106,7 @@ function render(container) {
 
             handlePaginationClick(event, { 
                 currentPage, 
-                totalPages: Math.ceil(getAllEmployees().length / ITEMS_PER_PAGE) || 1
+                totalPages: Math.ceil(getEmployees().length / ITEMS_PER_PAGE) || 1
             }, (newPage) => {
                 currentPage = newPage;
                 renderAttendancePage(container);

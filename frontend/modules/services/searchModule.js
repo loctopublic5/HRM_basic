@@ -1,4 +1,4 @@
-import { getAllEmployees } from './employeeDbModule.js';
+import { getEmployees } from './employeeDbModule.js';
 
 /**
  * Lấy danh sách gợi ý tên nhân viên dựa trên chuỗi tìm kiếm.
@@ -11,7 +11,7 @@ export function getAutocompleteSuggestions(nameQuery) {
     }
 
     const lowerCaseQuery = nameQuery.trim().toLowerCase();
-    const allEmployees = getAllEmployees();
+    const allEmployees = getEmployees();
 
     const suggestions = allEmployees
         .filter(emp => emp.name.toLowerCase().includes(lowerCaseQuery))
@@ -29,7 +29,7 @@ export function getAutocompleteSuggestions(nameQuery) {
  */
 export function searchEmployees({ nameQuery, deptId, posId }) {
     const lowerCaseNameQuery = nameQuery ? nameQuery.trim().toLowerCase() : '';
-    let results = getAllEmployees();
+    let results = getEmployees();
 
     // 1. Lọc theo tên (nếu có)
     if (lowerCaseNameQuery) {

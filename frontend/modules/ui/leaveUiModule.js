@@ -1,6 +1,6 @@
-import { getAllEmployees } from '../services/employeeDbModule.js';
-import { addLeaveRequest, getAllLeaveRequests, updateLeaveStatus, getLeaveBalance } from './leaveModule.js';
-import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
+import { getEmployees } from '../services/employeeDbModule.js';
+import { addLeaveRequest, getAllLeaveRequests, updateLeaveStatus, getLeaveBalance } from '../services/leaveModule.js';
+import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let currentPage = 1;
@@ -11,7 +11,7 @@ const ITEMS_PER_PAGE = 5;
  * @param {HTMLElement} container - Vùng chứa nội dung của module.
  */
 function renderPageContent(container) {
-    const employees = getAllEmployees();
+    const employees = getEmployees();
     const allRequests = getAllLeaveRequests();
 
     // --- LOGIC PHÂN TRANG (ĐÃ SỬA LỖI) ---

@@ -1,13 +1,7 @@
 import { getPositionsByDepartmentId, getPositionById } from '../services/positionModule.js';
-import { getAllEmployees } from '../services/employeeDbModule.js';
-import { 
-    getAllDepartments, 
-    addDepartment,
-    updateDepartment,
-    deleteDepartment,
-    getDepartmentById
-} from '../services/departmentModule.js';
-import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
+import { getEmployees } from '../services/employeeDbModule.js';
+import { getAllDepartments, addDepartment,updateDepartment,deleteDepartment,getDepartmentById} from '../services/departmentModule.js';
+import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let currentView = 'list';
@@ -72,7 +66,7 @@ async function renderDetailsView(container, departmentId) {
         return;
     }
 
-    const allEmployees = getAllEmployees();
+    const allEmployees = getEmployees();
     let employeesInDept = allEmployees.filter(emp => emp.departmentId === departmentId);
 
     employeesInDept.sort((a, b) => {
@@ -211,7 +205,7 @@ function render(container) {
                     return;
                 }
                 
-                const totalPages = Math.ceil(getAllEmployees().filter(e => e.departmentId === selectedDepartmentId).length / DETAIL_ITEMS_PER_PAGE) || 1;
+                const totalPages = Math.ceil(getEmployees().filter(e => e.departmentId === selectedDepartmentId).length / DETAIL_ITEMS_PER_PAGE) || 1;
                 handlePaginationClick(event, { currentPage: detailCurrentPage, totalPages }, (newPage) => {
                     detailCurrentPage = newPage;
                     renderDetailsView(container, selectedDepartmentId);

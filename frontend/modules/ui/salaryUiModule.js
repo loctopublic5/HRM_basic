@@ -1,7 +1,7 @@
-import { getAllEmployees, getEmployeeById } from '../services/employeeDbModule.js';
-import { getPositionById } from './positionModule.js';
-import { isGreaterThanZero } from '../helper/validators.js';
-import { addAdjustment, getAdjustmentsForEmployee, calculateSalaryDetails } from './salaryModule.js';
+import { getEmployees, getEmployeeById } from '../services/employeeDbModule.js';
+import { getPositionById } from '../services/positionModule.js';
+import { isGreaterThanZero } from '../helpers/validators.js';
+import { addAdjustment, getAdjustmentsForEmployee, calculateSalaryDetails } from '../services/salaryModule.js';
 
 let selectedEmployeeId = null;
 
@@ -122,7 +122,7 @@ function render(container) {
     }
 
     // Luôn vẽ lại layout chính khi được gọi
-    const employees = getAllEmployees();
+    const employees = getEmployees();
     container.innerHTML = `
         <div class="page-header">
             <h2>Quản lý Điều chỉnh Lương</h2>

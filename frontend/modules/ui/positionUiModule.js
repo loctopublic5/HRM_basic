@@ -4,8 +4,8 @@ import {
     addPosition,
     updatePosition,
     deletePosition
-} from './positionModule.js';
-import { renderPagination, handlePaginationClick } from '../helper/paginationComponent.js';
+} from '../services/positionModule.js';
+import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
 let isEditing = false;

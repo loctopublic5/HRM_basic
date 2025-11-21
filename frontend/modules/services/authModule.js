@@ -1,4 +1,4 @@
-import { apiPost } from '../helper/apiHelper.js';
+import { apiPost } from '../helpers/apiHelper.js';
 
 const USER_SESSION_KEY = 'hrm_user_session';
 

@@ -3,62 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRM Dashboard</title>
+    <title>HRM System - Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+
+    <!-- 1. Màn hình Login (Overlay) -->
     <div id="login-view">
-        <form id="login-form">
-            <h2>Đăng nhập HRM</h2>
-            <input type="text" name="username" placeholder="Tên đăng nhập (admin)" required>
-            <input type="password" name="password" placeholder="Mật khẩu (admin123)" required>
-            <button type="submit">Đăng nhập</button>
-            <p id="login-error" class="error-message"></p>
-        </form>
+        <div class="card" style="width: 400px; padding: 2rem;">
+            <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--primary-color);">Đăng Nhập HRM</h2>
+            <form id="login-form">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="margin-bottom: 0.5rem; display: block;">Tên đăng nhập</label>
+                    <input type="text" name="username" class="form-control" placeholder="admin">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="margin-bottom: 0.5rem; display: block;">Mật khẩu</label>
+                    <input type="password" name="password" class="form-control" placeholder="******">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Đăng Nhập</button>
+                <p id="login-error" style="color: var(--danger-color); margin-top: 10px; text-align: center;"></p>
+            </form>
+        </div>
     </div>
 
+    <!-- 2. Master Layout (Grid Container) -->
     <div id="app" style="display: none;">
+        
+        <!-- A. Sidebar -->
         <aside id="sidebar">
             <div class="sidebar-header">
-                <h3 class="sidebar-title">HRM App</h3>
+                <i class="fa-solid fa-layer-group" style="margin-right: 10px;"></i> HRM Pro
             </div>
             <nav class="sidebar-nav">
-                <a href="#" data-module="employeeManagement" class="nav-link"><i class="fa-solid fa-users"></i> <span>Nhân viên</span></a>
-                <a href="#" data-module="search" class="nav-link"><i class="fa-solid fa-magnifying-glass"></i> <span></span>Tìm kiếm</a>
-                <a href="#" data-module="manageDepartments" class="nav-link"><i class="fa-solid fa-building"></i> <span>Phòng ban</span></a>
-                <a href="#" data-module="managePositions" class="nav-link"><i class="fa-solid fa-briefcase"></i> <span>Vị trí</span></a>
-                <a href="#" data-module="attendance" class="nav-link"><i class="fa-solid fa-clock"></i> <span>Chấm công</span></a>
-                <a href="#" data-module="salaryManagement" class="nav-link"><i class="fa-solid fa-hand-holding-dollar"></i> <span>Lương & Thưởng</span></a>
-                <a href="#" data-module="leaveManagement" class="nav-link"><i class="fa-solid fa-calendar-alt"></i> <span>Nghỉ phép</span></a>
-                <a href="#" data-module="performanceManagement" class="nav-link"><i class="fa-solid fa-chart-line"></i> <span>Hiệu suất</span></a>
+                <a href="#" data-module="employeeManagement" class="nav-link active">
+                    <i class="fa-solid fa-users"></i> <span>Nhân viên</span>
+                </a>
+                <a href="#" data-module="manageDepartments" class="nav-link">
+                    <i class="fa-solid fa-building"></i> <span>Phòng ban</span>
+                </a>
+                <a href="#" data-module="managePositions" class="nav-link">
+                    <i class="fa-solid fa-briefcase"></i> <span>Vị trí</span>
+                </a>
+                <a href="#" data-module="attendance" class="nav-link">
+                    <i class="fa-solid fa-clock"></i> <span>Chấm công</span>
+                </a>
+                <!-- Thêm các link khác -->
             </nav>
-            <div class="sidebar-footer">
-                <button id="sidebar-logout-btn" class="sidebar-action-btn">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                        <span>Đăng xuất</span>
-                </button>
-                <button id="sidebar-toggle">
-                    <i class="fa-solid fa-angles-left"></i> 
-                        <span>Thu gọn</span>
+            <div class="sidebar-footer" style="margin-top: auto; padding: 1rem;">
+                <button id="sidebar-toggle" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: #fff; width: 100%;">
+                    <i class="fa-solid fa-bars"></i> Thu gọn
                 </button>
             </div>
         </aside>
 
-        <div class="main-content-wrapper">
-            <header id="app-header">
-                <div id="breadcrumbs"></div>
-                <div class="user-menu">
-                    <button id="user-menu-btn">Chào, Admin <i class="fa-solid fa-caret-down"></i></button>
-                    <div id="user-menu-dropdown" class="user-menu-dropdown">
-                        <a href="#" id="logout-btn">Đăng xuất</a>
-                    </div>
+        <!-- B. Header -->
+        <header id="app-header">
+            <div id="breadcrumbs" style="font-weight: 500; color: var(--text-muted);">
+                Trang chủ / Quản lý Nhân viên
+            </div>
+            <div class="user-menu">
+                <button id="user-menu-btn" class="btn btn-sm btn-primary">
+                    <i class="fa-solid fa-user"></i> Admin <i class="fa-solid fa-caret-down" style="margin-left: 5px;"></i>
+                </button>
+                <!-- Dropdown menu code here -->
+            </div>
+        </header>
+
+        <!-- C. Main Content (Nơi các module sẽ render vào) -->
+        <main id="main-content">
+            
+            <!-- VÍ DỤ: Cấu trúc HTML mà employeeUiModule.js CẦN tạo ra -->
+            <div class="card">
+                <div class="card-header">
+                    Danh sách Nhân viên
                 </div>
-            </header>
-            <main id="main-content"></main>
-        </div>
+                <div class="card-body">
+                    
+                    <!-- Action Bar: Search + Add Button -->
+                    <div class="action-bar" style="margin-bottom: 1.5rem;">
+                        <!-- Khu vực trái: Form tìm kiếm -->
+                        <form id="search-employee-form" class="search-group">
+                            <input type="text" class="form-control" placeholder="Tên nhân viên..." style="flex: 2;">
+                            <select class="form-control" style="flex: 1;">
+                                <option>Tất cả Phòng ban</option>
+                            </select>
+                            <select class="form-control" style="flex: 1;">
+                                <option>Tất cả Vị trí</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-magnifying-glass"></i> Tìm
+                            </button>
+                        </form>
+
+                        <!-- Khu vực phải: Nút thêm -->
+                        <div class="actions">
+                            <button id="add-employee-btn" class="btn btn-success" style="background-color: var(--success-color);">
+                                <i class="fa-solid fa-plus"></i> Thêm mới
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Data Table -->
+                    <div class="table-responsive">
+                        <table class="table-standard">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Họ và Tên</th>
+                                    <th>Phòng ban</th>
+                                    <th>Vị trí</th>
+                                    <th>Ngày vào làm</th>
+                                    <th style="text-align: center;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>EMP_001</td>
+                                    <td><strong>Nguyễn Văn A</strong></td>
+                                    <td><span class="badge">IT</span></td>
+                                    <td>Senior Dev</td>
+                                    <td>2023-01-15</td>
+                                    <td style="text-align: center;">
+                                        <button class="btn btn-sm btn-primary"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <!-- Thêm các dòng khác -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination (nếu có) -->
+                </div>
+            </div>
+            <!-- Hết Ví dụ -->
+
+        </main>
     </div>
 
     <script type="module" src="app.js"></script>
 </body>
 </html>
+```
+
+### Hướng dẫn Áp dụng vào JS của bạn
+
+Bây giờ, khi viết lại `employeeUiModule.js`, bạn hãy copy cấu trúc HTML trong phần **Ví dụ** ở trên và chèn vào chuỗi template string.
+
+Ví dụ:
+```javascript
+container.innerHTML = `
+    <div class="card">
+        <div class="card-body">
+            <div class="action-bar">
+                <form id="search-form" class="search-group">
+                    <!-- Các input dùng class="form-control" -->
+                </form>
+                <!-- Nút thêm dùng class="btn btn-success" -->
+            </div>
+            <div class="table-responsive">
+                <table class="table-standard">
+                    <!-- ... -->
+                </table>
+            </div>
+        </div>
+    </div>
+`;
