@@ -63,3 +63,20 @@ export async function updateEmployee(id, data) {
 export async function deleteEmployee(id) {
     return await apiDelete('employees', id);
 }
+/**
+ * [MỚI] Lấy danh sách nhân viên thuộc một phòng ban cụ thể từ Server.
+ * Sử dụng API search có sẵn của Backend.
+ * @param {string} departmentId 
+ * @param {number} page 
+ * @param {number} limit 
+ * @returns {Promise<object>} { data: [], pagination: {} }
+ */
+export async function getEmployeesByDepartment(departmentId, page = 1, limit = 10) {
+    // Gọi API: GET /api.php?resource=employees&deptId=...&page=...&limit=...
+    // Tận dụng controller searchEmployees của Backend đã làm
+    return await apiGet('employees', { 
+        deptId: departmentId,
+        page: page,
+        limit: limit
+    });
+}

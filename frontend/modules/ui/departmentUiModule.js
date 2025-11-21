@@ -1,6 +1,12 @@
-import { getPositionsByDepartmentId, getPositionById } from '../services/positionModule.js';
-import { getEmployees } from '../services/employeeDbModule.js';
-import { getAllDepartments, addDepartment,updateDepartment,deleteDepartment,getDepartmentById} from '../services/departmentModule.js';
+
+import { 
+    getDepartments,      
+    createDepartment,    
+    updateDepartment,
+    deleteDepartment,
+    getDepartmentById
+} from '../services/departmentModule.js'; 
+import { getEmployeesByDepartment } from '../services/employeeDbModule.js';
 import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
@@ -17,210 +23,292 @@ const DETAIL_ITEMS_PER_PAGE = 10;
 let detailSortBy = 'name';
 let detailSortOrder = 'asc';
 
+
 /**
  * HÀM RENDER VIEW DANH SÁCH PHÒNG BAN
  */
 async function renderListView(container) {
-    const allDepartments = await getAllDepartments();
-    const totalPages = Math.ceil(allDepartments.length / LIST_ITEMS_PER_PAGE) || 1;
-    const paginatedDepartments = allDepartments.slice((listCurrentPage - 1) * LIST_ITEMS_PER_PAGE, listCurrentPage * LIST_ITEMS_PER_PAGE);
-    const paginationHtml = renderPagination(listCurrentPage, totalPages);
-    
+    // Hiển thị Loading Spinner
     container.innerHTML = `
-        <div class="page-header"><h2>Quản lý Phòng ban</h2></div>
-        <form id="add-dept-form">
-            <input type="text" id="new-dept-name" placeholder="Tên phòng ban mới" required>
-            <button type-="submit">Thêm mới</button>
-        </form>
-        <hr>
-        <h3>Danh sách Phòng ban</h3>
-        <table id="departments-table">
-            <thead>
-                <tr><th>ID</th><th>Tên Phòng ban</th><th>Hành động</th></tr>
-            </thead>
-            <tbody>
-                ${paginatedDepartments.map(dept => `
-                    <tr>
-                        <td>${dept.id}</td>
-                        <td>${dept.name}</td>
-                        <td class="actions">
-                            <button class="details-btn" data-id="${dept.id}">Chi tiết</button>
-                            <button class="dept-edit-btn" data-id="${dept.id}">Sửa</button>
-                            <button class="dept-delete-btn" data-id="${dept.id}">Xóa</button>
-                        </td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-        ${paginationHtml}
+        <div style="display: flex; justify-content: center; align-items: center; height: 300px;">
+            <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+            <span style="margin-left: 15px; color: #666; font-weight: 500;">Đang tải danh sách phòng ban...</span>
+        </div>
     `;
+
+    try {
+        // SỬA LỖI: Gọi hàm getDepartments()
+        const allDepartments = await getDepartments();
+        const totalPages = Math.ceil(allDepartments.length / LIST_ITEMS_PER_PAGE) || 1;
+        const paginatedDepartments = allDepartments.slice((listCurrentPage - 1) * LIST_ITEMS_PER_PAGE, listCurrentPage * LIST_ITEMS_PER_PAGE);
+        const paginationHtml = renderPagination(listCurrentPage, totalPages);
+        
+        container.innerHTML = `
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="module-title">Quản lý Phòng ban</h2>
+                    <div class="action-bar">
+                        <form id="add-dept-form" class="search-group">
+                            <input type="text" id="new-dept-name" class="form-control" placeholder="Nhập tên phòng ban mới..." required>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fa-solid fa-plus"></i> Thêm mới
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="departments-table" class="table-standard">
+                            <thead>
+                                <tr>
+                                    <th style="width: 100px;">ID</th>
+                                    <th>Tên Phòng ban</th>
+                                    <th style="text-align: center; width: 250px;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${paginatedDepartments.length > 0 ? paginatedDepartments.map(dept => `
+                                    <tr>
+                                        <td style="font-family: monospace; color: #666;">${dept.id}</td>
+                                        <td style="font-weight: 600; color: var(--color-primary);">${dept.name}</td>
+                                        <td class="actions" style="text-align: center;">
+                                            <button class="btn btn-sm btn-outline details-btn" data-id="${dept.id}" title="Xem danh sách nhân viên">
+                                                <i class="fa-solid fa-eye" style="color: #17a2b8;"></i> Chi tiết
+                                            </button>
+                                            <button class="btn btn-sm btn-outline dept-edit-btn" data-id="${dept.id}" title="Sửa tên">
+                                                <i class="fa-solid fa-pen" style="color: #f39c12;"></i> Sửa
+                                            </button>
+                                            <button class="btn btn-sm btn-outline dept-delete-btn" data-id="${dept.id}" title="Xóa">
+                                                <i class="fa-solid fa-trash" style="color: #e74c3c;"></i> Xóa
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('') : `
+                                    <tr>
+                                        <td colspan="3" style="text-align: center; padding: 3rem; color: #999;">
+                                            <i class="fa-solid fa-box-open" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                            Chưa có phòng ban nào.
+                                        </td>
+                                    </tr>
+                                `}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    ${paginationHtml}
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("Lỗi khi render danh sách phòng ban:", error);
+        container.innerHTML = `<div class="error-message" style="padding: 2rem;">Lỗi tải dữ liệu: ${error.message}</div>`;
+    }
 }
 
 /**
  * HÀM RENDER VIEW CHI TIẾT PHÒNG BAN
  */
 async function renderDetailsView(container, departmentId) {
-    const department = await getDepartmentById(departmentId);
-    if (!department) {
-        container.innerHTML = `<h2>Không tìm thấy phòng ban</h2><button id="back-to-depts">Quay lại</button>`;
-        return;
-    }
-
-    const allEmployees = getEmployees();
-    let employeesInDept = allEmployees.filter(emp => emp.departmentId === departmentId);
-
-    employeesInDept.sort((a, b) => {
-        if (a[detailSortBy] < b[detailSortBy]) return detailSortOrder === 'asc' ? -1 : 1;
-        if (a[detailSortBy] > b[detailSortBy]) return detailSortOrder === 'asc' ? 1 : -1;
-        return 0;
-    });
-
-    const totalPages = Math.ceil(employeesInDept.length / DETAIL_ITEMS_PER_PAGE) || 1;
-    const paginatedEmployees = employeesInDept.slice((detailCurrentPage - 1) * DETAIL_ITEMS_PER_PAGE, detailCurrentPage * DETAIL_ITEMS_PER_PAGE);
-    const paginationHtml = renderPagination(detailCurrentPage, totalPages);
-    
     container.innerHTML = `
-        <div class="page-header">
-            <h2>Danh sách Nhân viên - Phòng ${department.name}</h2>
-            <button id="back-to-depts">Quay lại</button>
+        <div style="display: flex; justify-content: center; align-items: center; height: 300px;">
+            <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+            <span style="margin-left: 15px; color: #666; font-weight: 500;">Đang tải dữ liệu nhân viên...</span>
         </div>
-        <table class="table-standard">
-            <thead>
-                <tr>
-                    <th data-sort="id">ID Nhân viên</th>
-                    <th data-sort="name">Tên ${detailSortBy === 'name' ? (detailSortOrder === 'desc' ? '▾' : '▴') : ''}</th>
-                    <th>Vị trí</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${paginatedEmployees.map(emp => {
-                    const position = getPositionById(emp.positionId);
-                    return `
-                        <tr>
-                            <td>${emp.id}</td>
-                            <td>${emp.name}</td>
-                            <td>${position ? position.title : 'N/A'}</td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-        </table>
-        ${paginationHtml}
     `;
+
+    try {
+        const department = await getDepartmentById(departmentId);
+        
+        if (!department) {
+            container.innerHTML = `
+                <div class="content-card" style="padding: 2rem; text-align: center;">
+                    <h3 style="color: #e74c3c;">Không tìm thấy phòng ban</h3>
+                    <button id="back-to-depts" class="btn btn-primary" style="margin-top: 1rem;">Quay lại</button>
+                </div>`;
+            return;
+        }
+
+        const result = await getEmployeesByDepartment(departmentId, detailCurrentPage, DETAIL_ITEMS_PER_PAGE);
+        
+        const employeesInDept = result.data || []; 
+        const pagination = result.pagination || { totalPages: 1, currentPage: 1 }; 
+
+        const paginationHtml = renderPagination(pagination.currentPage, pagination.totalPages);
+        
+        container.innerHTML = `
+            <div class="content-card">
+                <div class="card-header">
+                    <div class="action-bar">
+                        <h2 class="module-title" style="margin: 0;">
+                            <span style="color: #666; font-weight: normal;">Phòng ban:</span> ${department.name}
+                        </h2>
+                        <button id="back-to-depts" class="btn btn-outline">
+                            <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table-standard">
+                            <thead>
+                                <tr>
+                                    <th data-sort="id" style="cursor: pointer;">ID Nhân viên</th>
+                                    <th data-sort="name" style="cursor: pointer;">
+                                        Họ và Tên ${detailSortBy === 'name' ? (detailSortOrder === 'desc' ? '▾' : '▴') : ''}
+                                    </th>
+                                    <th>Vị trí</th>
+                                    <th>Ngày vào làm</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${employeesInDept.length > 0 ? employeesInDept.map(emp => {
+                                    const positionTitle = emp.position_title || 'N/A';
+                                    const hireDate = emp.hire_date ? new Date(emp.hire_date).toLocaleDateString('vi-VN') : 'N/A';
+                                    
+                                    return `
+                                        <tr>
+                                            <td style="font-family: monospace; color: #666;">${emp.id}</td>
+                                            <td style="font-weight: 600; color: var(--color-primary);">${emp.name}</td>
+                                            <td><span class="badge badge-info">${positionTitle}</span></td>
+                                            <td>${hireDate}</td>
+                                        </tr>
+                                    `;
+                                }).join('') : `
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 3rem; color: #999;">
+                                            <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 15px; display: block; color: #e0e6ed;"></i>
+                                            <p>Chưa có nhân viên nào trong phòng ban này.</p>
+                                        </td>
+                                    </tr>
+                                `}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    ${paginationHtml}
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = `
+            <div class="content-card" style="padding: 2rem;">
+                <p class="error-message">Lỗi khi tải chi tiết: ${error.message}</p> 
+                <button id="back-to-depts" class="btn btn-primary">Quay lại</button>
+            </div>`;
+    }
 }
+
 /**
- * HÀM CHÍNH (EXPORT): Gắn sự kiện 1 lần và render nội dung.
+ * HÀM RENDER CHÍNH
  */
-function render(container) {
+export async function render(container) {
     if (!container.dataset.departmentEventsAttached) {
-        container.addEventListener('submit', event => {
+        
+        container.addEventListener('submit', async (event) => {
             if (event.target.id === 'add-dept-form') {
                 event.preventDefault();
                 const newNameInput = event.target.querySelector('#new-dept-name');
                 const newName = newNameInput.value.trim();
                 if (newName) {
-                    const allDepartments = getAllDepartments();
+                    // SỬA LỖI: Gọi getDepartments() thay vì getAllDepartments()
+                    const allDepartments = await getDepartments(); 
                     const isDuplicate = allDepartments.some(dept => dept.name.toLowerCase() === newName.toLowerCase());
                     if (isDuplicate) {
                         alert(`Tên phòng ban "${newName}" đã tồn tại.`);
                         return;
                     }
-                    addDepartment(newName);
-                    listCurrentPage = 1;
-                    renderListView(container); // SỬA LỖI: Gọi đúng hàm render view
+                    // SỬA LỖI: Gọi createDepartment() thay vì addDepartment()
+                    if (await createDepartment(newName)) {
+                        listCurrentPage = 1;
+                        await renderListView(container);
+                    }
                 }
             }
         });
 
-        container.addEventListener('click', event => {
-            if (currentView === 'list') {
-                const editBtn = event.target.closest('.dept-edit-btn'); // SỬA LỖI: Tên class đúng
-                if (editBtn) {
-                    const departmentId = editBtn.dataset.id;
-                    const currentName = editBtn.closest('tr').children[1].textContent;
-                    const newName = prompt('Nhập tên mới cho phòng ban:', currentName);
-                    if (newName && newName.trim() !== '') {
-                        updateDepartment(departmentId, newName.trim());
-                        renderListView(container); // SỬA LỖI: Gọi đúng hàm render view
-                    }
-                    return;
-                }
+        container.addEventListener('click', async (event) => {
+            const target = event.target;
 
-                const deleteBtn = event.target.closest('.dept-delete-btn'); // SỬA LỖI: Tên class đúng
-                if (deleteBtn) {
-                    const departmentId = deleteBtn.dataset.id;
-                    const relatedPositions = getPositionsByDepartmentId(departmentId);
-                    if (relatedPositions.length > 0) {
-                        alert('Lỗi: Không thể xóa phòng ban này...');
-                        return;
-                    }
-                    if (confirm(`Bạn có chắc chắn muốn xóa phòng ban có ID: ${departmentId}?`)) {
-                        deleteDepartment(departmentId);
-                        const newTotalPages = Math.ceil(getAllDepartments().length / LIST_ITEMS_PER_PAGE) || 1;
-                        if (listCurrentPage > newTotalPages) { // SỬA LỖI: Dùng listCurrentPage
-                            listCurrentPage = newTotalPages;
-                        }
-                        renderListView(container); // SỬA LỖI: Gọi đúng hàm render view
-                    }
-                    return;
-                }
-                
-                const detailsBtn = event.target.closest('.details-btn');
+            // --- LOGIC CHO MÀN HÌNH DANH SÁCH ---
+            if (currentView === 'list') {
+                const detailsBtn = target.closest('.details-btn');
                 if (detailsBtn) {
                     currentView = 'details';
                     selectedDepartmentId = detailsBtn.dataset.id;
-                    detailCurrentPage = 1; detailSortBy = 'name'; detailSortOrder = 'asc';
-                    render(container);
+                    detailCurrentPage = 1; 
+                    await renderDetailsView(container, selectedDepartmentId);
                     return;
                 }
 
-                
-                
-                const totalPages = Math.ceil(getAllDepartments().length / LIST_ITEMS_PER_PAGE) || 1;
-                handlePaginationClick(event, { currentPage: listCurrentPage, totalPages }, (newPage) => {
-                    listCurrentPage = newPage;
-                    renderListView(container);
-                });
+                const editBtn = target.closest('.dept-edit-btn');
+                if (editBtn) {
+                    const departmentId = editBtn.dataset.id;
+                    const currentName = editBtn.closest('tr').querySelector('td:nth-child(2)').textContent; // Lấy text từ cột tên
+                    const newName = prompt('Nhập tên mới cho phòng ban:', currentName);
+                    if (newName && newName.trim() !== '') {
+                        await updateDepartment(departmentId, newName.trim());
+                        await renderListView(container);
+                    }
+                    return;
+                }
 
-                } else if (currentView === 'details') {
-                const backBtn = event.target.closest('#back-to-depts');
+                const deleteBtn = target.closest('.dept-delete-btn');
+                if (deleteBtn) {
+                    const departmentId = deleteBtn.dataset.id;
+                    if (confirm(`Bạn có chắc chắn muốn xóa phòng ban này?`)) {
+                        const success = await deleteDepartment(departmentId);
+                        if (success) {
+                             const allDepts = await getDepartments(); // Sửa lỗi gọi hàm
+                             const newTotalPages = Math.ceil(allDepts.length / LIST_ITEMS_PER_PAGE) || 1;
+                             if (listCurrentPage > newTotalPages) listCurrentPage = newTotalPages;
+                             await renderListView(container);
+                        }
+                    }
+                    return;
+                }
+                
+                const paginationBtn = target.closest('.pagination button');
+                if (paginationBtn) {
+                     const allDepts = await getDepartments(); // Sửa lỗi gọi hàm
+                     const totalPages = Math.ceil(allDepts.length / LIST_ITEMS_PER_PAGE) || 1;
+                     handlePaginationClick(event, { currentPage: listCurrentPage, totalPages }, async (newPage) => {
+                        listCurrentPage = newPage;
+                        await renderListView(container);
+                    });
+                }
+
+            // --- LOGIC CHO MÀN HÌNH CHI TIẾT ---
+            } else if (currentView === 'details') {
+                const backBtn = target.closest('#back-to-depts');
                 if (backBtn) {
                     currentView = 'list';
                     selectedDepartmentId = null;
-                    render(container); // Gọi render chính để quay về
-                    return;
-                }
-
-                const sortHeader = event.target.closest('[data-sort]');
-                if (sortHeader) {
-                    const newSortBy = sortHeader.dataset.sort;
-                    if (detailSortBy === newSortBy) {
-                        detailSortOrder = detailSortOrder === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        detailSortBy = newSortBy;
-                        detailSortOrder = 'asc';
-                    }
-                    detailCurrentPage = 1;
-                    renderDetailsView(container, selectedDepartmentId);
+                    await renderListView(container);
                     return;
                 }
                 
-                const totalPages = Math.ceil(getEmployees().filter(e => e.departmentId === selectedDepartmentId).length / DETAIL_ITEMS_PER_PAGE) || 1;
-                handlePaginationClick(event, { currentPage: detailCurrentPage, totalPages }, (newPage) => {
-                    detailCurrentPage = newPage;
-                    renderDetailsView(container, selectedDepartmentId);
-                });
+                const paginationBtn = target.closest('.pagination button');
+                if (paginationBtn) {
+                     const result = await getEmployeesByDepartment(selectedDepartmentId, detailCurrentPage, DETAIL_ITEMS_PER_PAGE);
+                     const totalPages = result.pagination ? result.pagination.totalPages : 1;
+
+                     handlePaginationClick(event, { currentPage: detailCurrentPage, totalPages }, async (newPage) => {
+                        detailCurrentPage = newPage;
+                        await renderDetailsView(container, selectedDepartmentId);
+                    });
+                }
             }
         });
+
         container.dataset.departmentEventsAttached = 'true';
     }
 
-    // Router nội bộ
     if (currentView === 'list') {
-        renderListView(container);
+        await renderListView(container);
     } else if (currentView === 'details') {
-        renderDetailsView(container, selectedDepartmentId);
+        await renderDetailsView(container, selectedDepartmentId);
     }
 }
-
-export { render };

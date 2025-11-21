@@ -1,4 +1,4 @@
-import { getAllDepartments } from '../services/departmentModule.js';
+import { getDepartments } from '../services/departmentModule.js';
 import { 
     getAllPositions, 
     addPosition,
@@ -19,7 +19,7 @@ const ITEMS_PER_PAGE = 5;
  */
 function renderPageContent(container) {
     const allPositions = getAllPositions();
-    const departments = getAllDepartments();
+    const departments = getDepartments();
     const departmentMap = departments.reduce((map, dept) => ({...map, [dept.id]: dept.name}), {});
 
     const totalPages = Math.ceil(allPositions.length / ITEMS_PER_PAGE) || 1;
