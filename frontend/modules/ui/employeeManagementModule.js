@@ -1,9 +1,9 @@
 
-import { getDepartments } from '../services/departmentModule.js';
-import { getAllPositions } from '../services/positionModule.js';
-import { getAllShifts } from '../services/shiftModule.js';
-import { getEmployees, searchEmployees, createEmployee, updateEmployee, deleteEmployee, getEmployeeById } from '../services/employeeDbModule.js';
-import { calculateSalaryDetails } from '../services/salaryModule.js';
+import { getDepartments } from '../services/departmentService.js';
+import { getPositions } from '../services/positionService.js';
+import { getAllShifts } from '../services/shiftService.js';
+import { getEmployees, searchEmployees, createEmployee, updateEmployee, deleteEmployee, getEmployeeById } from '../services/employeeService.js';
+import { calculateSalaryDetails } from '../services/salaryService.js';
 import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 import { isNotEmpty, isNameUnique } from '../helpers/validators.js';
 
@@ -54,7 +54,7 @@ async function loadInitialData(container) {
         const [empData, depts, pos, shfts] = await Promise.all([
             getEmployees(currentPage, ITEMS_PER_PAGE, sortBy, sortOrder),
             getDepartments(),
-            getAllPositions(),
+            getPositions(),
             getAllShifts()
         ]);
         

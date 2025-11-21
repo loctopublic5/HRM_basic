@@ -1,5 +1,5 @@
-import { getEmployees } from '../services/employeeDbModule.js';
-import { addReview, getPerformanceStats } from '../services/performanceModule.js';
+import { getEmployees } from '../services/employeeService.js';
+import { addReview, getPerformanceStats } from '../services/performancService.js';
 import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---

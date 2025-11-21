@@ -1,5 +1,5 @@
-import { getPositionById } from './positionModule.js';
-import {  getEmployeeById } from './employeeDbModule.js';
+import { getPositionById } from './positionService.js';
+import {  getEmployeeById } from './employeeService.js';
 
 const ADJUSTMENTS_STORAGE_KEY = 'hrm_salary_adjustments';
 

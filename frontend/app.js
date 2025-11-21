@@ -3,7 +3,7 @@
 // --- 1. IMPORTS (Cập nhật đường dẫn đúng vào thư mục services và ui) ---
 
 // Services
-import * as Auth from './modules/services/authModule.js';
+import * as Auth from './modules/services/authService.js';
 
 // UI Modules
 import * as EmployeeManagementUI from './modules/ui/employeeManagementModule.js';

@@ -1,5 +1,5 @@
-import { getEmployees } from '../services/employeeDbModule.js';
-import { checkIn, checkOut, getTodaysAttendanceForEmployee } from '../services/attendanceModule.js';
+import { getEmployees } from '../services/employeeService.js';
+import { checkIn, checkOut, getTodaysAttendanceForEmployee } from '../services/attendanceService.js';
 import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO PHÂN TRANG ---

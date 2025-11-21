@@ -1,5 +1,5 @@
-import { getEmployees } from '../services/employeeDbModule.js';
-import { addLeaveRequest, getAllLeaveRequests, updateLeaveStatus, getLeaveBalance } from '../services/leaveModule.js';
+import { getEmployees } from '../services/employeeService.js';
+import { addLeaveRequest, getAllLeaveRequests, updateLeaveStatus, getLeaveBalance } from '../services/leaveService.js';
 import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---

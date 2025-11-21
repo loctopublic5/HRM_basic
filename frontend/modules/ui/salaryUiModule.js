@@ -1,7 +1,7 @@
-import { getEmployees, getEmployeeById } from '../services/employeeDbModule.js';
-import { getPositionById } from '../services/positionModule.js';
+import { getEmployees, getEmployeeById } from '../services/employeeService.js';
+import { getPositionById } from '../services/positionService.js';
 import { isGreaterThanZero } from '../helpers/validators.js';
-import { addAdjustment, getAdjustmentsForEmployee, calculateSalaryDetails } from '../services/salaryModule.js';
+import { addAdjustment, getAdjustmentsForEmployee, calculateSalaryDetails } from '../services/salaryService.js';
 
 let selectedEmployeeId = null;
 

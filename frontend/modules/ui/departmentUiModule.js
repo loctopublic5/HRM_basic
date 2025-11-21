@@ -5,8 +5,8 @@ import {
     updateDepartment,
     deleteDepartment,
     getDepartmentById
-} from '../services/departmentModule.js'; 
-import { getEmployeesByDepartment } from '../services/employeeDbModule.js';
+} from '../services/departmentService.js'; 
+import { getEmployeesByDepartment } from '../services/employeeService.js';
 import { renderPagination, handlePaginationClick } from '../helpers/paginationComponent.js';
 
 // --- BIẾN TRẠNG THÁI CHO MODULE ---
@@ -213,7 +213,6 @@ export async function render(container) {
                 const newNameInput = event.target.querySelector('#new-dept-name');
                 const newName = newNameInput.value.trim();
                 if (newName) {
-                    // SỬA LỖI: Gọi getDepartments() thay vì getAllDepartments()
                     const allDepartments = await getDepartments(); 
                     const isDuplicate = allDepartments.some(dept => dept.name.toLowerCase() === newName.toLowerCase());
                     if (isDuplicate) {
