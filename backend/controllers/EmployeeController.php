@@ -1,15 +1,52 @@
 <?php
 require_once __DIR__ . '/../models/EmployeeModel.php';
 require_once __DIR__ . '/../models/PositionModel.php'; 
+require_once __DIR__ . '/../models/SalaryModel.php';
 
 class EmployeeController extends BaseController {
     
     private EmployeeModel $employeeModel;
-    private PositionModel $positionModel; // Thêm PositionModel để validate
+    private PositionModel $positionModel; 
+    private SalaryModel $salaryModel;
 
     public function __construct() {
         $this->employeeModel = new EmployeeModel();
-        $this->positionModel = new PositionModel(); // Khởi tạo
+        $this->positionModel = new PositionModel(); 
+        $this->salaryModel = new SalaryModel();
+    }
+
+    /**
+     * Hàm hỗ trợ (Private): Bơm dữ liệu lương vào danh sách nhân viên.
+     * Giúp tái sử dụng logic cho cả List, Search và GetById.
+     */
+    private function enrichWithSalary(array &$employees): void {
+        // Nếu input là mảng 1 chiều (1 nhân viên), chuyển thành mảng 2 chiều để xử lý chung
+        $isSingle = !isset($employees[0]); 
+        if ($isSingle) {
+            $employees = [$employees];
+        }
+
+        foreach ($employees as &$emp) {
+            // Gọi SalaryModel để tính toán lương "nóng"
+            // Lưu ý: Hàm này trả về null nếu không tìm thấy, ta cần xử lý fallback
+            $salaryProfile = $this->salaryModel->calculateEmployeeSalaryProfile($emp['id']);
+
+            if ($salaryProfile) {
+                // Gán Lương thực nhận (Base + Allowances)
+                $emp['total_salary'] = $salaryProfile['final_salary'];
+                // Gán Lương cơ bản (để hiển thị tham chiếu nếu cần)
+                $emp['salary_base'] = $salaryProfile['salary_base'];
+            } else {
+                // Mặc định nếu chưa có hồ sơ lương/vị trí
+                $emp['total_salary'] = 0;
+                $emp['salary_base'] = 0;
+            }
+        }
+
+        // Nếu đầu vào là 1 nhân viên, trả về lại dạng mảng 1 chiều
+        if ($isSingle) {
+            $employees = $employees[0];
+        }
     }
 
     /**
@@ -25,6 +62,9 @@ class EmployeeController extends BaseController {
             $sortOrder = (string)($_GET['sortOrder'] ?? 'ASC');
 
             $data = $this->employeeModel->getAll($page, $limit, $sortBy, $sortOrder);
+            if (!empty($data)) {
+                $this->enrichWithSalary($data);
+            }
             $total = $this->employeeModel->getTotalEmployees();
 
             $response = [
@@ -64,6 +104,12 @@ class EmployeeController extends BaseController {
 
             $result = $this->employeeModel->search($criteria, $page, $limit, $sortBy, $sortOrder);
 
+            if (!empty($result['data'])) {
+                // $result['data'] là mảng các nhân viên
+                // Hàm này sẽ tham chiếu (&) và sửa trực tiếp mảng này
+                $this->enrichWithSalary($result['data']);
+            }
+            
             $response = [
                 'data' => $result['data'],
                 'pagination' => [
