@@ -104,18 +104,33 @@ CREATE TABLE `employees` (
   `id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `hire_date` date NOT NULL,
+  
   `position_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `shift_id` int(11) NULL DEFAULT NULL COMMENT 'Ca làm việc mặc định', -- CỘT MỚI
+  `department_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Phòng ban trực thuộc', -- CỘT MỚI
+  `shift_id` int(11) NULL DEFAULT NULL COMMENT 'Ca làm việc mặc định',
+  
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  
   PRIMARY KEY (`id`),
   KEY `idx_emp_name` (`name`),
   KEY `fk_emp_pos` (`position_id`),
-  KEY `fk_emp_shift` (`shift_id`), -- INDEX MỚI
+  KEY `fk_emp_dept` (`department_id`), -- INDEX MỚI
+  KEY `fk_emp_shift` (`shift_id`),
   KEY `idx_emp_is_active` (`is_active`),
+  
   CONSTRAINT `fk_emp_pos` FOREIGN KEY (`position_id`) REFERENCES `positions` (`id`) ON UPDATE CASCADE ON DELETE SET NULL,
-  CONSTRAINT `fk_emp_shift` FOREIGN KEY (`shift_id`) REFERENCES `work_shifts` (`id`) ON UPDATE CASCADE ON DELETE SET NULL -- RÀNG BUỘC MỚI
+  CONSTRAINT `fk_emp_dept` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`) ON UPDATE CASCADE ON DELETE SET NULL, -- RÀNG BUỘC MỚI
+  CONSTRAINT `fk_emp_shift` FOREIGN KEY (`shift_id`) REFERENCES `work_shifts` (`id`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dữ liệu mẫu (Đã thêm department_id tương ứng với vị trí)
+INSERT INTO `employees` (`id`, `name`, `hire_date`, `position_id`, `department_id`, `shift_id`, `is_active`) VALUES
+('EMP_1', 'Nguyễn Văn A', '2023-01-15', 'pos_dev', 'dept_it', 1, 1),
+('EMP_2', 'Trần Thị B', '2022-08-20', 'pos_recruiter', 'dept_hr', 1, 1),
+('EMP_3', 'Lê Văn C', '2021-05-10', 'pos_manager', 'dept_mkt', 1, 1),
+('EMP_4', 'Phạm Thị D', '2023-03-01', 'pos_qa', 'dept_it', 1, 1),
+('EMP_5', 'Hoàng Văn E', '2023-06-15', 'pos_content', 'dept_mkt', 1, 1);
 
 -- Gán tất cả nhân viên mẫu vào "Ca Hành chính 8h" (id=1)
 INSERT INTO `employees` (`id`, `name`, `hire_date`, `position_id`, `shift_id`) VALUES

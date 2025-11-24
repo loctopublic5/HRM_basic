@@ -14,37 +14,42 @@ class EmployeeModel extends BaseModel {
     public function create(object $data): array {
         $id = 'EMP_' . time();
         
-        // 1. Làm sạch dữ liệu đầu vào
+        // 1. Làm sạch & Map dữ liệu
         $name = htmlspecialchars(strip_tags($data->name));
         $hireDate = htmlspecialchars(strip_tags($data->hireDate));
         $positionId = htmlspecialchars(strip_tags($data->positionId));
-        // Lấy shift_id (cho phép NULL nếu không được cung cấp)
-        $shiftId = !empty($data->shift_id) ? (int)$data->shift_id : null;
+        
+        // Xử lý Department ID (Frontend gửi 'departmentId' hoặc 'department_id')
+        $rawDeptId = $data->departmentId ?? $data->department_id ?? null;
+        $departmentId = !empty($rawDeptId) ? htmlspecialchars(strip_tags($rawDeptId)) : null;
 
-        // 2. Chuẩn bị câu truy vấn
+        // Xử lý Shift ID
+        $rawShiftId = $data->shift_id ?? $data->shiftId ?? null;
+        $shiftId = !empty($rawShiftId) ? (int)$rawShiftId : null;
+
+        // 2. SQL Query
         $query = "INSERT INTO " . $this->tableName . " 
-                    (id, name, hire_date, position_id, shift_id, is_active) 
+                    (id, name, hire_date, position_id, department_id, shift_id, is_active) 
                 VALUES 
-                    (:id, :name, :hire_date, :position_id, :shift_id, 1)";
+                    (:id, :name, :hire_date, :position_id, :department_id, :shift_id, 1)";
         
         $stmt = $this->pdo->prepare($query);
 
-        // 3. Bind các tham số
+        // 3. Bind Params
         $stmt->bindParam(':id', $id);
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':hire_date', $hireDate);
         $stmt->bindParam(':position_id', $positionId);
-        // Bind shift_id (cho phép NULL)
+        // Bind Department ID (Cho phép Null)
+        $stmt->bindParam(':department_id', $departmentId, $departmentId === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
         $stmt->bindParam(':shift_id', $shiftId, $shiftId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
 
-        // 4. Thực thi và kiểm tra
         if ($stmt->execute()) {
             return [
                 'id' => $id, 
                 'name' => $name, 
-                'hire_date' => $hireDate,
-                'position_id' => $positionId,
-                'shift_id' => $shiftId
+                'department_id' => $departmentId, // Trả về để kiểm tra
+                'position_id' => $positionId
             ];
         }
         
@@ -57,33 +62,41 @@ class EmployeeModel extends BaseModel {
      * @param object $data Dữ liệu mới từ request body.
      * @return bool True nếu cập nhật thành công.
      */
-    public function update(string $id, object $data): bool {
+public function update(string $id, object $data): bool {
         // 1. Làm sạch dữ liệu
         $name = htmlspecialchars(strip_tags($data->name));
         $hireDate = htmlspecialchars(strip_tags($data->hireDate));
         $positionId = htmlspecialchars(strip_tags($data->positionId));
-        $shiftId = !empty($data->shift_id) ? (int)$data->shift_id : null;
+        
+        // Xử lý Department ID
+        $rawDeptId = $data->departmentId ?? $data->department_id ?? null;
+        $departmentId = !empty($rawDeptId) ? htmlspecialchars(strip_tags($rawDeptId)) : null;
 
-        // 2. Chuẩn bị câu truy vấn
+        // Xử lý Shift ID
+        $rawShiftId = $data->shift_id ?? $data->shiftId ?? null;
+        $shiftId = !empty($rawShiftId) ? (int)$rawShiftId : null;
+
+        // 2. SQL Query
         $query = "UPDATE " . $this->tableName . " 
-                  SET 
-                      name = :name, 
-                      hire_date = :hire_date, 
-                      position_id = :position_id,
-                      shift_id = :shift_id 
-                  WHERE 
-                      id = :id AND is_active = 1";
-                  
+                SET 
+                    name = :name, 
+                    hire_date = :hire_date, 
+                    position_id = :position_id,
+                    department_id = :department_id,
+                    shift_id = :shift_id 
+                WHERE 
+                    id = :id AND is_active = 1";
+                
         $stmt = $this->pdo->prepare($query);
         
-        // 3. Bind các tham số
+        // 3. Bind Params
         $stmt->bindParam(':name', $name);
         $stmt->bindParam(':hire_date', $hireDate);
         $stmt->bindParam(':position_id', $positionId);
+        $stmt->bindParam(':department_id', $departmentId, $departmentId === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
         $stmt->bindParam(':shift_id', $shiftId, $shiftId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
         $stmt->bindParam(':id', $id);
         
-        // 4. Thực thi
         return $stmt->execute();
     }
 
@@ -100,18 +113,18 @@ class EmployeeModel extends BaseModel {
     /**
      * Lấy thông tin chi tiết của MỘT nhân viên (ĐÃ CẬP NHẬT THÊM JOIN).
      */
-    public function getById(string $id): ?array {
-        // Cập nhật câu query để JOIN và lấy thêm Tên Vị trí, Tên Phòng ban, Tên Ca
+public function getById(string $id): ?array {
+        // SELECT e.* sẽ lấy luôn cả cột department_id chúng ta vừa thêm vào DB
         $query = "SELECT 
                     e.*, 
                     p.title as position_title, 
                     d.name as department_name,
                     ws.shift_name
-                  FROM " . $this->tableName . " AS e
-                  LEFT JOIN positions AS p ON e.position_id = p.id
-                  LEFT JOIN departments AS d ON p.department_id = d.id
-                  LEFT JOIN work_shifts AS ws ON e.shift_id = ws.id
-                  WHERE 
+                    FROM " . $this->tableName . " AS e
+                    LEFT JOIN positions AS p ON e.position_id = p.id
+                    LEFT JOIN departments AS d ON p.department_id = d.id -- Join này để lấy tên hiển thị
+                    LEFT JOIN work_shifts AS ws ON e.shift_id = ws.id
+                    WHERE 
                     e.id = :id AND e.is_active = 1";
         
         $stmt = $this->pdo->prepare($query);
@@ -124,8 +137,8 @@ class EmployeeModel extends BaseModel {
     /**
      * Lấy danh sách nhân viên có phân trang và sắp xếp (ĐÃ CẬP NHẬT THÊM JOIN).
      */
-    public function getAll(int $page = 1, int $limit = 10, string $sortBy = 'name', string $sortOrder = 'ASC'): array {
-        // 1. Bảo mật Sắp xếp (Thêm shift_name)
+public function getAll(int $page = 1, int $limit = 10, string $sortBy = 'name', string $sortOrder = 'ASC'): array {
+        // 1. Bảo mật Sắp xếp
         $allowedSortBy = ['id', 'name', 'hire_date', 'position_title', 'department_name', 'shift_name'];
         if (!in_array($sortBy, $allowedSortBy)) $sortBy = 'name';
         $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
@@ -133,25 +146,33 @@ class EmployeeModel extends BaseModel {
         // 2. Tính toán OFFSET
         $offset = ($page - 1) * $limit;
 
-        // 3. Câu truy vấn SQL JOIN (Thêm LEFT JOIN work_shifts)
+        // 3. Câu truy vấn SQL (Đã tối ưu hóa)
         $query = "SELECT 
                     e.id, 
                     e.name, 
-                    e.hire_date, 
+                    e.hire_date,
+                    
+                    -- Lấy Raw ID để Frontend dùng cho logic Sửa (Pre-fill)
+                    e.department_id,
+                    e.position_id,
+                    e.shift_id,
+                    
+                    -- Lấy Tên hiển thị (Human Readable)
                     p.title as position_title, 
                     d.name as department_name,
                     ws.shift_name
-                  FROM " . $this->tableName . " AS e
-                  LEFT JOIN positions AS p ON e.position_id = p.id
-                  LEFT JOIN departments AS d ON p.department_id = d.id
-                  LEFT JOIN work_shifts AS ws ON e.shift_id = ws.id
-                  WHERE 
+                    
+                    FROM " . $this->tableName . " AS e
+                    LEFT JOIN positions AS p ON e.position_id = p.id
+                    LEFT JOIN departments AS d ON e.department_id = d.id -- Join trực tiếp vào bảng departments
+                    LEFT JOIN work_shifts AS ws ON e.shift_id = ws.id
+                    WHERE 
                     e.is_active = 1
-                  ORDER BY 
+                    ORDER BY 
                     " . $sortBy . " " . $sortOrder . "
-                  LIMIT 
+                    LIMIT 
                     :limit 
-                  OFFSET 
+                    OFFSET 
                     :offset";
         
         $stmt = $this->pdo->prepare($query);
@@ -161,7 +182,6 @@ class EmployeeModel extends BaseModel {
         $stmt->execute();
         return $stmt->fetchAll();
     }
-
     /**
      * Lấy tổng số nhân viên đang hoạt động (Giữ nguyên).
      */
