@@ -1,6 +1,4 @@
 <?php
-// backend/models/EmployeeModel.php
-
 class EmployeeModel extends BaseModel {
     
     protected string $tableName = 'employees';
@@ -114,7 +112,6 @@ public function update(string $id, object $data): bool {
      * Lấy thông tin chi tiết của MỘT nhân viên (ĐÃ CẬP NHẬT THÊM JOIN).
      */
 public function getById(string $id): ?array {
-        // SELECT e.* sẽ lấy luôn cả cột department_id chúng ta vừa thêm vào DB
         $query = "SELECT 
                     e.*, 
                     p.title as position_title, 
@@ -122,7 +119,7 @@ public function getById(string $id): ?array {
                     ws.shift_name
                     FROM " . $this->tableName . " AS e
                     LEFT JOIN positions AS p ON e.position_id = p.id
-                    LEFT JOIN departments AS d ON p.department_id = d.id -- Join này để lấy tên hiển thị
+                    LEFT JOIN departments AS d ON e.department_id = d.id 
                     LEFT JOIN work_shifts AS ws ON e.shift_id = ws.id
                     WHERE 
                     e.id = :id AND e.is_active = 1";
@@ -199,9 +196,9 @@ public function getAll(int $page = 1, int $limit = 10, string $sortBy = 'name', 
         
         // 1. Khởi tạo câu truy vấn (Thêm LEFT JOIN work_shifts)
         $queryBase = "FROM " . $this->tableName . " AS e
-                      LEFT JOIN positions AS p ON e.position_id = p.id
-                      LEFT JOIN departments AS d ON p.department_id = d.id
-                      LEFT JOIN work_shifts AS ws ON e.shift_id = ws.id";
+                    LEFT JOIN positions AS p ON e.position_id = p.id
+                    LEFT JOIN departments AS d ON p.department_id = d.id
+                    LEFT JOIN work_shifts AS ws ON e.shift_id = ws.id";
         
         $whereClauses = ["e.is_active = 1"];
         $params = [];
@@ -243,9 +240,9 @@ public function getAll(int $page = 1, int $limit = 10, string $sortBy = 'name', 
                         p.title as position_title, 
                         d.name as department_name,
                         ws.shift_name
-                      " . $queryBase . $whereSql . "
-                      ORDER BY " . $sortBy . " " . $sortOrder . "
-                      LIMIT :limit OFFSET :offset";
+                        " . $queryBase . $whereSql . "
+                        ORDER BY " . $sortBy . " " . $sortOrder . "
+                        LIMIT :limit OFFSET :offset";
         
         $dataStmt = $this->pdo->prepare($dataQuery);
         $dataStmt->bindParam(':limit', $limit, PDO::PARAM_INT);

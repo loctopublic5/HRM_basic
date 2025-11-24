@@ -80,11 +80,22 @@ try {
             elseif ($method === 'DELETE' && $id !== null) $controller->softDelete($id);
             else (new BaseController())->sendError('Phương thức hoặc tham số không hợp lệ.', 405);
             break;
-        case 'employees':
+            case 'employees':
             $controller = new EmployeeController();
+            
             if ($method === 'GET') {
-                if (isset($_GET['name']) || isset($_GET['deptId']) || isset($_GET['posId'])) $controller->searchEmployees();
-                else $controller->listEmployees();
+                // Ưu tiên 1: Nếu có ID -> Lấy chi tiết (GetById)
+                if ($id !== null) {
+                    $controller->getEmployeeById($id);
+                }
+                // Ưu tiên 2: Nếu có tham số tìm kiếm -> Tìm kiếm (Search)
+                elseif (isset($_GET['name']) || isset($_GET['deptId']) || isset($_GET['posId'])) {
+                    $controller->searchEmployees();
+                }
+                // Cuối cùng: Lấy danh sách mặc định (List All)
+                else {
+                    $controller->listEmployees();
+                }
             }
             elseif ($method === 'POST') $controller->addEmployee();
             elseif ($method === 'PUT' && $id !== null) $controller->updateEmployee($id);

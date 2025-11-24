@@ -215,5 +215,29 @@ class EmployeeController extends BaseController {
             $this->sendError('Lỗi máy chủ khi xóa: ' . $t->getMessage(), 500);
         }
     }
+
+    /**
+     * Xử lý: GET /api.php?resource=employees&id={id}
+     * Nhiệm vụ: Gọi Model để lấy chi tiết nhân viên và kèm theo lương.
+     */
+    public function getEmployeeById(string $id): void {
+        try {
+            // 1. GỌI MODEL (Bước quan trọng bạn vừa phát hiện)
+            $employee = $this->employeeModel->getById($id);
+
+            if ($employee) {
+                // 2. Tính toán lương (Logic đã làm ở các bước trước)
+                // Lưu ý: Cần đảm bảo bạn đã copy hàm enrichWithSalary vào Controller này rồi
+                $this->enrichWithSalary($employee);
+                
+                // 3. Trả về kết quả
+                $this->sendResponse($employee);
+            } else {
+                $this->sendError('Không tìm thấy nhân viên với ID: ' . $id, 404);
+            }
+        } catch (Throwable $t) {
+            $this->sendError('Lỗi máy chủ: ' . $t->getMessage(), 500);
+        }
+    }
 }
 ?>

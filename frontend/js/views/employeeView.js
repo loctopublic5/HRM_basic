@@ -125,72 +125,56 @@ class EmployeeView {
     }
 
     // 4. SHOW MODAL 
-showModal(data = null, departments = [], positions = [], shifts = []) {
+    showModal(data = null, departments = [], positions = [], shifts = []) {
         const isEdit = !!data;
-        const title = isEdit ? `Cập nhật hồ sơ: ${data.name}` : 'Thêm mới nhân viên';
+        const title = isEdit ? `Cập nhật: ${data.name}` : 'Thêm mới nhân viên';
         const btnText = isEdit ? 'Lưu thay đổi' : 'Thêm mới';
 
-        // --- 1. CHUẨN HÓA DỮ LIỆU (Safe Access) ---
-        const empId = data?.id || '';
+        // --- 1. CHUẨN HÓA DỮ LIỆU ---
+        // Dùng cú pháp ?. và || '' để tránh lỗi undefined
         const empName = data?.name || '';
         const empHireDate = data?.hire_date || '';
         
-        // Lấy ID hiện tại (API trả về snake_case)
+        // Lấy ID để Pre-fill
         let currentDeptId = data?.department_id;
-        const currentPosId = data?.position_id;
+        let currentPosId = data?.position_id;
         const currentShiftId = data?.shift_id;
 
-        // --- 2. LOGIC QUAN TRỌNG: Xử lý Dropdown Phụ thuộc ---
-        // Vấn đề: Nếu Backend không trả về department_id, ta phải tìm nó từ position_id
+        // Fallback: Nếu API thiếu department_id, tự tìm từ position
         if (isEdit && !currentDeptId && currentPosId) {
             const foundPos = positions.find(p => p.id == currentPosId);
-            if (foundPos) {
-                currentDeptId = foundPos.department_id;
-            }
+            if (foundPos) currentDeptId = foundPos.department_id;
         }
-        // Đảm bảo không bị undefined/null để so sánh
+        // Đảm bảo là string rỗng nếu null để so sánh
         currentDeptId = currentDeptId || '';
 
-        // Lọc danh sách Vị trí NGAY LẬP TỨC dựa trên Phòng ban hiện tại
-        // Để khi modal hiện lên, dropdown Vị trí đã có đúng danh sách cần thiết
+        // --- 2. RENDER OPTIONS ---
+        
+        // Department Options
+        const deptOpts = departments.map(d => 
+            `<option value="${d.id}" ${d.id == currentDeptId ? 'selected' : ''}>${d.name}</option>`
+        ).join('');
+
+        // Shift Options
+        const shiftOpts = shifts.map(s => 
+            `<option value="${s.id}" ${s.id == currentShiftId ? 'selected' : ''}>${s.shift_name}</option>`
+        ).join('');
+
+        // --- LOGIC QUAN TRỌNG: LỌC VỊ TRÍ ---
+        // Lọc danh sách Vị trí dựa trên Phòng ban hiện tại (hoặc rỗng nếu tạo mới chưa chọn)
         const filteredPositions = currentDeptId 
             ? positions.filter(p => p.department_id == currentDeptId)
-            : []; // Nếu thêm mới chưa chọn Dept thì list rỗng
+            : [];
 
-        // --- 3. RENDER OPTIONS ---
-        // Sử dụng toán tử == để so sánh an toàn (tránh lỗi string vs number)
-
-        const deptOpts = departments.map(d => 
-            `<option value="${d.id}" ${isEdit && d.id == currentDeptId ? 'selected' : ''}>${d.name}</option>`
-        ).join('');
-
+        // Render Position Options
         const posOpts = filteredPositions.map(p => 
-            `<option value="${p.id}" ${isEdit && p.id == currentPosId ? 'selected' : ''}>${p.title}</option>`
+            `<option value="${p.id}" ${p.id == currentPosId ? 'selected' : ''}>${p.title}</option>`
         ).join('');
 
-        const shiftOpts = shifts.map(s => 
-            `<option value="${s.id}" ${isEdit && s.id == currentShiftId ? 'selected' : ''}>${s.shift_name}</option>`
-        ).join('');
 
-        // --- 4. RENDER FORM HTML ---
+        // --- 3. HTML FORM ---
         const html = `
-            <form id="employee-form" data-mode="${isEdit ? 'edit' : 'create'}">
-                <input type="hidden" name="id" value="${empId}">
-                
-                <input type="hidden" id="original-dept-id" value="${currentDeptId}">
-                <input type="hidden" id="original-pos-id" value="${currentPosId || ''}">
-
-                <div style="margin-bottom: 15px; text-align: right;">
-                    <span class="badge ${isEdit ? 'badge-warning' : 'badge-success'}">
-                        ${isEdit ? 'Chế độ: Cập nhật' : 'Chế độ: Thêm mới'}
-                    </span>
-                </div>
-
-                <div id="salary-warning" class="d-none" style="background: #fff3cd; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 0.9rem; border: 1px solid #ffeeba; display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-triangle-exclamation"></i> 
-                    <div><strong>Lưu ý:</strong> Thay đổi Vị trí/Phòng ban sẽ đặt lại lương cơ bản.</div>
-                </div>
-
+            <form id="employee-form">
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Họ và Tên <span class="text-danger">*</span></label>
@@ -212,7 +196,7 @@ showModal(data = null, departments = [], positions = [], shifts = []) {
                     <div class="form-group">
                         <label class="form-label">Vị trí <span class="text-danger">*</span></label>
                         <select name="positionId" id="modal-pos-select" class="form-control" required>
-                            <option value="">-- ${isEdit ? 'Chọn Vị trí' : 'Chọn Phòng ban trước'} --</option>
+                            <option value="">-- Chọn Vị trí --</option>
                             ${posOpts}
                         </select>
                     </div>
@@ -229,23 +213,18 @@ showModal(data = null, departments = [], positions = [], shifts = []) {
         `;
 
         const footer = `
-            <button class="btn btn-outline" onclick="UI.closeModal()">Hủy bỏ</button>
-            <button class="btn btn-primary" id="btn-save-employee">
-                <i class="fa-solid fa-floppy-disk"></i> ${btnText}
-            </button>
+            <button class="btn btn-outline" onclick="UI.closeModal()">Hủy</button>
+            <button class="btn btn-primary" id="btn-save-employee">${btnText}</button>
         `;
 
         UI.showModal(title, html, footer);
-        
-        // Lưu ý: Các logic lắng nghe sự kiện change (để update dropdown khi user chọn lại)
-        // đã được xử lý ở Controller thông qua bindModalLogic()
     }
 
     // 5. HELPER UI METHODS
     updateModalPositions(filteredPositions) {
         const select = document.getElementById('modal-pos-select');
         if (select) {
-            select.innerHTML = '<option value="">-- Chọn --</option>' + 
+            select.innerHTML = '<option value="">-- Chọn Vị trí --</option>' + 
                 filteredPositions.map(p => `<option value="${p.id}">${p.title}</option>`).join('');
         }
     }
@@ -340,24 +319,24 @@ showModal(data = null, departments = [], positions = [], shifts = []) {
     }
 
     bindModalSave(handler) {
-        // Save Handler
         const saveListener = (e) => {
+            // Kiểm tra nút bấm có ID btn-save-employee không
             if (e.target && e.target.id === 'btn-save-employee') {
                 const form = document.getElementById('employee-form');
-                if (form.checkValidity()) {
+                if (form && form.checkValidity()) {
                     const formData = new FormData(form);
                     const data = Object.fromEntries(formData.entries());
-                    handler(data);
-                } else {
+                    handler(data); // Gửi data về Controller
+                } else if (form) {
                     form.reportValidity();
                 }
             }
         };
+
         document.removeEventListener('click', this._saveHandlerReference);
         this._saveHandlerReference = saveListener;
         document.addEventListener('click', this._saveHandlerReference);
-
-        // Dept Change Dispatcher
+        
         const deptChangeListener = (e) => {
             if (e.target && e.target.id === 'modal-dept-select') {
                 const event = new CustomEvent('modal-dept-changed', { detail: e.target.value });
