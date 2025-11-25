@@ -23,8 +23,13 @@
     /* Spacing & Sizes */
     --header-height: 60px;
     --sidebar-width: 260px;
+    --sidebar-collapsed-width: 70px; /* Đã thêm dấu ; quan trọng */
+    
     --radius: 8px;
     --shadow: 0 4px 6px rgba(0,0,0,0.05);
+    
+    /* Animation */
+    --transition-speed: 0.3s;
     --transition: all 0.3s ease;
 }
 
@@ -32,6 +37,7 @@
    2. RESET & GLOBAL STYLES
    ========================================= */
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-body);
@@ -39,53 +45,191 @@ body {
     font-size: 14px;
     line-height: 1.5;
     height: 100vh;
-    overflow: hidden; /* Ngăn cuộn body, chỉ cuộn content */
+    overflow: hidden;
 }
 
 /* =========================================
-   3. LAYOUT GRID (Sidebar + Main)
+   3. LAYOUT SYSTEM (CSS GRID)
    ========================================= */
-.app-container {
+#app, .app-container {
     display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-columns: var(--sidebar-width) 1fr; 
     grid-template-rows: var(--header-height) 1fr;
     height: 100vh;
+    transition: grid-template-columns var(--transition-speed) ease-in-out;
 }
 
-/* Sidebar */
+/* Trạng thái Thu gọn */
+#app.sidebar-collapsed, 
+.app-container.sidebar-collapsed {
+    grid-template-columns: var(--sidebar-collapsed-width) 1fr;
+}
+
+/* Main Content Area */
+.main-content {
+    grid-column: 2; 
+    grid-row: 2;    
+    padding: 1.5rem;
+    overflow-y: auto;
+    background-color: var(--bg-body);
+}
+
+/* =========================================
+   4. SIDEBAR & HEADER
+   ========================================= */
 .sidebar {
+    grid-column: 1;
     grid-row: 1 / -1;
     background-color: var(--primary);
     color: white;
     display: flex;
     flex-direction: column;
+    overflow: hidden; 
+    white-space: nowrap;
+    border-right: 1px solid rgba(0,0,0,0.1);
+    z-index: 100;
 }
+
 .sidebar-header {
     height: var(--header-height);
     display: flex;
     align-items: center;
     padding: 0 1.5rem;
-    font-weight: bold;
     font-size: 1.2rem;
-    background: rgba(0,0,0,0.1);
+    font-weight: bold;
+    background-color: rgba(0,0,0,0.1);
+    transition: padding var(--transition-speed);
 }
+
 .nav-link {
-    display: block;
+    display: flex; /* Dùng flex để căn icon và text dễ hơn */
+    align-items: center;
     padding: 12px 20px;
     color: rgba(255,255,255,0.7);
     text-decoration: none;
     transition: var(--transition);
     border-left: 3px solid transparent;
     cursor: pointer;
+    height: 50px; /* Cố định chiều cao */
 }
+
+.nav-link i {
+    width: 24px; /* Cố định width icon để thẳng hàng */
+    text-align: center;
+    margin-right: 10px;
+    transition: margin var(--transition-speed);
+    font-size: 1.1rem;
+}
+
 .nav-link:hover, .nav-link.active {
     background: rgba(255,255,255,0.05);
     color: white;
     border-left-color: var(--accent);
 }
 
-/* Header */
+/* SIDEBAR FOOTER & TOGGLE BUTTON (Của bạn đã chỉnh sửa) */
+.sidebar-footer {
+    margin-top: auto;
+    height: 50px;
+    padding: 0 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    background-color: rgba(0,0,0,0.2); 
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    overflow: hidden;
+}
+
+#sidebar-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%; 
+    background: rgba(255,255,255,0.1); 
+    border: none;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.3s ease; 
+}
+
+#sidebar-toggle:hover {
+    background-color: var(--accent); 
+    color: #fff;
+    transform: scale(1.1); 
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.4); 
+}
+/* =========================================
+    SIDEBAR HEADER (LOGO BRAND) - NÂNG CẤP
+   ========================================= */
+
+.sidebar-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    /* Padding chuẩn để nội dung không bị dính lề */
+    padding: 0 20px; 
+    
+    /* Nền đậm hơn một chút để tách biệt Logo với Menu */
+    background-color: rgba(0,0,0,0.2); 
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    
+    /* Quan trọng: Ẩn phần thừa khi thu nhỏ */
+    overflow: hidden; 
+    transition: all 0.3s ease;
+}
+
+/* Icon Logo (Biểu tượng) */
+.sidebar-header i {
+    /* Kích thước cố định để không bị méo */
+    min-width: 30px; 
+    font-size: 1.4rem; 
+    color: var(--accent); /* Màu điểm nhấn thương hiệu */
+    text-align: center;
+    
+    /* Khoảng cách với chữ */
+    margin-right: 10px; 
+    transition: all 0.3s ease;
+}
+
+/* Tên Thương hiệu (Text) */
+.sidebar-header span {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap; /* Không xuống dòng */
+    opacity: 1;
+    transition: opacity 0.2s ease, transform 0.3s ease;
+}
+
+/* --- LOGIC KHI THU GỌN (.sidebar-collapsed) --- */
+
+/* 1. Container: Căn giữa tuyệt đối */
+#app.sidebar-collapsed .sidebar-header {
+    padding: 0; /* Xóa padding để icon nằm chính giữa cột 70px */
+    justify-content: center;
+}
+
+/* 2. Text: Ẩn hoàn toàn */
+#app.sidebar-collapsed .sidebar-header span {
+    display: none; /* Loại bỏ khỏi luồng document */
+    opacity: 0;
+    transform: translateX(-20px); /* Hiệu ứng trượt nhẹ khi biến mất */
+}
+
+/* 3. Icon: Phóng to và căn giữa */
+#app.sidebar-collapsed .sidebar-header i {
+    margin-right: 0; /* Xóa khoảng cách bên phải */
+    font-size: 1.8rem; /* Icon to hơn làm Logo đại diện */
+    transform: scale(1.1); /* Hiệu ứng nổi bật */
+    color: #fff; /* Đổi sang màu trắng hoặc giữ nguyên var(--accent) tùy thích */
+}
+/* Header Top */
 .header {
+    grid-column: 2;
+    grid-row: 1;
     background: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
     display: flex;
@@ -93,288 +237,238 @@ body {
     justify-content: space-between;
     padding: 0 1.5rem;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    z-index: 90;
 }
 
-/* Main Content Area */
-.main-content {
-    padding: 1.5rem;
-    overflow-y: auto;
+/* --- LOGIC HIỂN THỊ KHI THU GỌN --- */
+.sidebar-collapsed .sidebar-header {
+    justify-content: center;
+    padding: 0;
+}
+.sidebar-collapsed .sidebar-header span,
+.sidebar-collapsed .nav-link span {
+    display: none; /* Ẩn chữ */
+}
+.sidebar-collapsed .nav-link {
+    justify-content: center;
+    padding-left: 0; 
+    padding-right: 0;
+}
+.sidebar-collapsed .nav-link i {
+    margin-right: 0;
+}
+.sidebar-collapsed .sidebar-header i {
+    margin-right: 0;
+    font-size: 1.5rem;
+    color: var(--accent);
+}
+.sidebar-collapsed .sidebar-footer {
+    justify-content: center;
+    padding: 0;
+}
+.sidebar-collapsed #sidebar-toggle {
+    transform: rotate(180deg);
+    background: transparent;
+}
+.sidebar-collapsed #sidebar-toggle:hover {
+    background-color: var(--accent);
+    color: #fff;
+    transform: rotate(180deg) scale(1.1);
 }
 
 /* =========================================
-   4. COMPONENT CLASSES (Reusable)
+   5. COMPONENTS (Card, Button, Form, Table...)
    ========================================= */
-
-/* Cards */
+/* Copy nguyên vẹn phần Component từ code của bạn */
 .card {
     background: var(--bg-card);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     border: 1px solid var(--border-color);
     margin-bottom: 1.5rem;
+    display: flex; 
+    flex-direction: column;
+    overflow: hidden; 
 }
 .card-header {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
     font-weight: 600;
     font-size: 1.1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background-color: #fff;
 }
 .card-body { padding: 1.5rem; }
 
-/* Buttons */
 .btn {
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius);
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: var(--transition);
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    gap: 0.5rem;
 }
-.btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover { background: var(--accent-hover); }
-.btn-success { background: var(--success); color: white; }
-.btn-danger { background: var(--danger); color: white; }
-.btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
-.btn-outline:hover { background: #f8f9fa; }
+.btn-primary { background-color: var(--accent); color: #fff; }
+.btn-primary:hover { background-color: var(--accent-hover); }
+.btn-success { background-color: var(--success); color: #fff; }
+.btn-danger { background-color: var(--danger); color: #fff; }
+.btn-outline { 
+    background-color: transparent; 
+    border-color: var(--border-color); 
+    color: var(--text-main); 
+}
+.btn-outline:hover { background-color: #f8f9fa; }
 
-/* Form Controls */
 .form-group { margin-bottom: 1rem; }
 .form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-.form-control {
+.form-control, .filter-input, .filter-select {
+    display: block;
     width: 100%;
     padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
     font-size: 1rem;
-}
-.form-control:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2); }
-
-/* Tables */
-.table-responsive { overflow-x: auto; }
-.table-standard {
-    width: 100%;
-    border-collapse: collapse;
-}
-.table-standard th {
-    text-align: left;
-    padding: 12px;
-    background: #f8f9fa;
-    border-bottom: 2px solid var(--border-color);
-    font-weight: 600;
-}
-.table-standard td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border-color);
-    vertical-align: middle;
-}
-.table-standard tr:hover { background-color: #f1f4f8; }
-
-/* Badges */
-.badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-.badge-success { background: #d4edda; color: #155724; }
-.badge-warning { background: #fff3cd; color: #856404; }
-.badge-danger { background: #f8d7da; color: #721c24; }
-
-/* Utilities */
-.action-bar { display: flex; gap: 10px; flex-wrap: wrap; }
-.d-none { display: none !important; }
-.text-center { text-align: center; }
-.flex-grow { flex-grow: 1; }
-
-/* =========================================
-   5. UI HELPERS (Modal & Toast)
-   ========================================= */
-
-/* Modal Overlay */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000;
-    opacity: 0; visibility: hidden;
-    transition: var(--transition);
-}
-.modal-overlay.open { opacity: 1; visibility: visible; }
-
-/* Modal Content */
-.modal-container {
-    background: white;
-    width: 500px;
-    max-width: 90%;
-    border-radius: var(--radius);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    transform: translateY(-20px);
-    transition: var(--transition);
-}
-.modal-overlay.open .modal-container { transform: translateY(0); }
-
-/* Toast Notification */
-.toast-container {
-    position: fixed; top: 20px; right: 20px;
-    z-index: 2000;
-    display: flex; flex-direction: column; gap: 10px;
-}
-.toast {
-    background: white;
-    padding: 15px 20px;
-    border-radius: var(--radius);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border-left: 5px solid var(--primary);
-    min-width: 300px;
-    animation: slideIn 0.3s ease;
-}
-.toast.success { border-left-color: var(--success); }
-.toast.error { border-left-color: var(--danger); }
-
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-
-/* --- 1. UTILITIES CHO MODULE --- */
-
-/* Container chính (đã có từ bước trước, tinh chỉnh thêm) */
-.content-card {
-    background: var(--bg-card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    color: var(--text-main);
+    background-color: #fff;
     border: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    height: 100%; /* Full height để footer nằm dưới cùng */
+    border-radius: var(--radius);
+    transition: border-color 0.15s ease-in-out;
+}
+.form-control:focus, .filter-input:focus, .filter-select:focus {
+    border-color: var(--accent);
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
 }
 
-/* Action Bar (Toolbar trên cùng) */
 .action-bar {
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 15px;
+    gap: 1rem;
     flex-wrap: wrap;
+    background-color: #fff;
 }
-
-/* Bộ lọc bên trái */
 .filter-group {
     display: flex;
-    gap: 10px;
+    gap: 0.5rem;
     flex: 1;
     min-width: 300px;
 }
 
-.filter-input, .filter-select {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    font-size: 0.9rem;
-    outline: none;
-}
-.filter-input:focus, .filter-select:focus {
-    border-color: var(--accent);
-}
-
-/* --- 2. DATA TABLE CHUẨN --- */
 .table-wrapper {
-    flex: 1; /* Chiếm hết không gian còn lại */
-    overflow: auto; /* Cuộn nếu dài */
-    padding: 0;
+    width: 100%;
+    overflow-x: auto;
 }
-
+.table-standard {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
 .table-standard th {
-    position: sticky;
-    top: 0;
-    background: #f8f9fa;
-    z-index: 10;
-    cursor: pointer; /* Để biết là sort được */
-    user-select: none;
+    background-color: #f8f9fa;
+    color: var(--text-main);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 2px solid var(--border-color);
+    white-space: nowrap;
+    position: sticky; top: 0; z-index: 10;
 }
-
-.table-standard th:hover {
-    background: #e9ecef;
+.table-standard td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
 }
+.table-standard tr:hover { background-color: #f8f9fa; }
 
-.sort-icon {
-    font-size: 0.8rem;
-    margin-left: 5px;
-    color: var(--text-muted);
+.text-center { text-align: center; }
+.text-danger { color: var(--danger); }
+.text-muted { color: var(--text-muted); }
+.d-none { display: none !important; }
+
+.badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
 }
+.badge-info { background-color: var(--info); }
+.badge-warning { background-color: var(--warning); color: #212529; }
+.badge-success { background-color: var(--success); }
 
-/* Tính năng Che lương */
 .salary-wrapper {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-family: monospace;
-    font-weight: 600;
+    font-family: 'Consolas', monospace;
 }
-.salary-hidden {
-    letter-spacing: 2px;
-    color: var(--text-muted);
-}
-.salary-visible {
-    color: var(--success);
-}
+.salary-hidden { color: var(--text-muted); letter-spacing: 2px; }
+.salary-visible { color: var(--success); font-weight: 600; }
 .toggle-salary-btn {
-    cursor: pointer;
-    color: var(--accent);
-    font-size: 0.9rem;
-    transition: var(--transition);
-    background: none;
-    border: none;
+    background: none; border: none; cursor: pointer; color: var(--accent);
 }
-.toggle-salary-btn:hover { color: var(--accent-hover); }
 
-/* --- 3. MODAL FORM --- */
-/* Form Grid: Chia cột trong modal */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1050;
+    display: none;
+    align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.open { display: flex; opacity: 1; }
+
+.modal-container {
+    background: #fff;
+    border-radius: var(--radius);
+    width: 600px;
+    max-width: 90%;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    transform: translateY(-20px); transition: transform 0.3s ease;
+    display: flex; flex-direction: column;
+}
+.modal-overlay.open .modal-container { transform: translateY(0); }
+
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-.form-grid .full-width {
-    grid-column: 1 / -1;
+    gap: 1rem;
 }
 
-/* --- 4. PAGINATION FOOTER --- */
 .pagination-bar {
     padding: 1rem 1.5rem;
     border-top: 1px solid var(--border-color);
     display: flex;
-    justify-content: space-between; /* Info bên trái, Nút bên phải */
+    justify-content: space-between;
     align-items: center;
-    background: #fcfcfc;
-}
-.pagination-controls {
-    display: flex;
-    gap: 5px;
 }
 .page-btn {
-    padding: 5px 10px;
     border: 1px solid var(--border-color);
-    background: white;
-    cursor: pointer;
+    background: #fff;
+    padding: 0.4rem 0.8rem;
+    margin-left: 0.25rem;
     border-radius: 4px;
+    cursor: pointer;
 }
 .page-btn.active {
-    background: var(--accent);
-    color: white;
+    background-color: var(--accent);
+    color: #fff;
     border-color: var(--accent);
 }
-.page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.loading-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.8);
+    z-index: 999;
+    display: flex; align-items: center; justify-content: center;
 }

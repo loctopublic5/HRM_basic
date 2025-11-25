@@ -21,6 +21,7 @@ const MODULE_REGISTRY = {
 
 class App {
     constructor() {
+        this.appContainer = document.getElementById('app');
         this.sidebar = document.querySelector('.sidebar-nav');
         this.mainContent = document.getElementById('main-content');
         this.pageTitle = document.getElementById('page-title'); // Giả sử bạn có thẻ này ở header
@@ -31,24 +32,42 @@ class App {
     // 1. Logic Khởi chạy (Auth Guard)
     initApp() {
         if (!AuthService.isLoggedIn()) {
-            // Case 1: Chưa đăng nhập -> Hiện Login
             AuthController.init();
         } else {
-            // Case 2: Đã đăng nhập -> Hiện Dashboard & Load Module
             AuthView.toggleLoginView(false);
             
-            // Hiển thị User Info
+            this.setupSidebar(); // Setup tính năng thu gọn
             this.updateUserInfo();
-            
-            // Gắn sự kiện Sidebar (Switch module)
             this.setupNavigation();
-            
-            // Gắn sự kiện Logout
             this.setupLogout();
 
-            // Mặc định load Employee (hoặc Dashboard)
             this.activateSidebar('employeeManagement');
             this.loadModule('employeeManagement');
+        }
+    }
+    setupSidebar() {
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const SIDEBAR_KEY = 'hrm_sidebar_state';
+
+        // Khôi phục trạng thái cũ
+        const savedState = localStorage.getItem(SIDEBAR_KEY);
+        if (savedState === 'collapsed') {
+            // Lúc này this.appContainer đã có giá trị, không còn lỗi nữa
+            this.appContainer.classList.add('sidebar-collapsed');
+        }
+
+        // Sự kiện Click
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Toggle Class
+                this.appContainer.classList.toggle('sidebar-collapsed');
+
+                // Lưu trạng thái
+                const isCollapsed = this.appContainer.classList.contains('sidebar-collapsed');
+                localStorage.setItem(SIDEBAR_KEY, isCollapsed ? 'collapsed' : 'expanded');
+            });
         }
     }
 
