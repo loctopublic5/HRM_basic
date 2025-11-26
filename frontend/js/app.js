@@ -8,6 +8,7 @@ import AuthController from './controllers/authController.js';
 import AuthView from './views/authView.js';
 import DepartmentController from './controllers/departmentController.js';
 import EmployeeController from './controllers/employeeController.js';
+import PositionController from './controllers/positionController.js';
 
 // --- MODULE REGISTRY ---
 // Ánh xạ từ data-module (HTML) sang Controller
@@ -15,7 +16,7 @@ const MODULE_REGISTRY = {
     'employeeManagement': EmployeeController,
     'dashboard': null, // Chưa implement
     'departments': DepartmentController,
-    'positions': null
+    'positions': PositionController,
 };
 
 class App {
