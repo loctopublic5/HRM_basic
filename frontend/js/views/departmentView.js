@@ -84,13 +84,7 @@ class DepartmentView {
                     <input type="text" name="name" class="form-control" value="${data?.name || ''}" required placeholder="Ví dụ: Phòng Kế toán">
                 </div>
                 
-                ${!isEdit ? `
-                <div class="form-group">
-                    <label class="form-label">Mã Phòng ban (ID) <span class="text-danger">*</span></label>
-                    <input type="text" name="newId" class="form-control" placeholder="Ví dụ: dept_acc" required>
-                    <small class="text-muted">Mã định danh duy nhất, không dấu, không khoảng trắng.</small>
-                </div>` : ''}
-            </form>
+                </form>
         `;
 
         const footer = `
@@ -99,9 +93,14 @@ class DepartmentView {
         `;
 
         UI.showModal(title, html, footer);
+
+        // Gắn sự kiện đóng modal (Click nút Hủy)
         const btnCancel = document.getElementById('btn-cancel-dept');
         if (btnCancel) {
-            btnCancel.addEventListener('click', () => UI.closeModal());
+            btnCancel.addEventListener('click', (e) => {
+                e.preventDefault(); // Chặn reload nếu nút nằm trong form
+                UI.closeModal();
+            });
         }
     }
 

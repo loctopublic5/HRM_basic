@@ -8,11 +8,11 @@ class PositionController {
         this.departments = [];
     }
 
-async init(container) {
+    async init(container) {
         try {
             UI.showLoading();
             
-            // 1. Tải song song Vị trí và Phòng ban
+            // 1. Tải dữ liệu
             const [posList, deptList] = await Promise.all([
                 Service.getPositions(),
                 Service.getDepartments()
@@ -21,13 +21,11 @@ async init(container) {
             this.positions = posList;
             this.departments = deptList;
 
-            // 2. Render Layout (Truyền danh sách phòng ban vào để tạo Dropdown)
+            // 2. Render
             View.renderLayout(container, this.departments);
-            
-            // 3. Render Bảng
             View.renderTable(this.positions);
             
-            // 4. Gắn sự kiện
+            // 3. Bind Events
             this.bindEvents();
             
             UI.hideLoading();
@@ -41,74 +39,47 @@ async init(container) {
         try {
             this.positions = await Service.getPositions();
             View.renderTable(this.positions);
-            this.bindEvents();
+            // Không cần gọi lại bindEvents() ở đây vì DOM layout chính không đổi
         } catch (e) {
             UI.toast('Không tải được danh sách vị trí', 'error');
         }
     }
 
     bindEvents() {
+        // 1. Gắn các sự kiện View cơ bản
         View.bindEvents({
-            onAdd: () => View.showModal(null),
+            onAdd: () => View.showModal(null, this.departments),
+            
             onEdit: async (id) => {
                 try {
                     UI.showLoading();
                     const pos = await Service.getPositionById(id);
                     UI.hideLoading();
-                    View.showModal(pos);
+                    View.showModal(pos, this.departments);
                 } catch (e) {
                     UI.hideLoading();
-                    UI.toast('Lỗi tải thông tin vị trí', 'error');
+                    UI.toast('Lỗi tải thông tin', 'error');
                 }
             },
+            
             onDelete: async (id) => {
-                const confirm = await UI.confirm(
-                    "Bạn có chắc chắn muốn xóa vị trí này không?<br>" +
-                    "<span class='text-danger'>Lưu ý: Việc này sẽ ảnh hưởng đến các nhân viên đang giữ chức vụ này.</span>"
-                );
+                const confirm = await UI.confirm("Bạn có chắc chắn muốn xóa vị trí này không?<br><span class='text-danger'>Lưu ý: Ảnh hưởng đến nhân viên đang giữ chức vụ.</span>");
                 if (confirm) {
                     try {
                         UI.showLoading();
                         await Service.deletePosition(id);
                         await this.loadData();
-                        UI.toast('Xóa vị trí thành công', 'success');
+                        UI.toast('Xóa thành công', 'success');
                     } catch (e) {
                         UI.hideLoading();
                         UI.toast(e.message, 'error');
                     }
                 }
             },
-            onSave: async (formData) => {
-                const payload = {
-                    title: formData.title,
-                    description: formData.description,
-                    salary_base: parseFloat(formData.salaryBase)
-                };
-                if (!payload.title.trim()) {
-                    UI.toast('Tên chức vụ không được để trống', 'warning');
-                    return;
-                }
-                if (isNaN(payload.salary_base) || payload.salary_base <= 0) {
-                    UI.toast('Lương cơ bản phải lớn hơn 0', 'warning');
-                    return;
-                }
 
-                try {
-                    UI.showLoading();
-                    if (formData.id) {
-                        await Service.updatePosition(formData.id, payload);
-                        UI.toast('Cập nhật thành công', 'success');
-                    } else {
-                        await Service.createPosition(payload);
-                        UI.toast('Thêm vị trí mới thành công', 'success');
-                    }
-                    UI.closeModal();
-                    await this.loadData();
-                } catch (e) {
-                    UI.hideLoading();
-                    UI.toast(e.message, 'error');
-                }
-            },
+            // (Lưu ý: onSave cũ trong View.bindEvents không còn tác dụng vì ta dùng bindModalSave riêng)
+            onSave: () => {}, 
+
             onSearch: (keyword) => {
                 if (!keyword) {
                     View.renderTable(this.positions);
@@ -118,7 +89,22 @@ async init(container) {
                 const filtered = this.positions.filter(p => p.title.toLowerCase().includes(lowerKey));
                 View.renderTable(filtered);
             },
-            // MỚI: Xử lý xem danh sách nhân viên
+
+            onFilter: ({ keyword, deptId }) => {
+                const lowerKey = keyword.toLowerCase();
+                const filtered = this.positions.filter(p => {
+                    const matchName = p.title.toLowerCase().includes(lowerKey);
+                    const matchDept = deptId ? (p.department_id == deptId) : true;
+                    return matchName && matchDept;
+                });
+                View.renderTable(filtered);
+            },
+
+            onReset: () => {
+                View.renderTable(this.positions);
+                UI.toast('Đã làm mới', 'info');
+            },
+
             onViewEmployees: async (posId, posTitle) => {
                 try {
                     UI.showLoading();
@@ -127,31 +113,58 @@ async init(container) {
                     View.showEmployeeListModal(posTitle, employees);
                 } catch (e) {
                     UI.hideLoading();
-                    UI.toast('Lỗi tải danh sách nhân viên: ' + e.message, 'error');
+                    UI.toast('Lỗi tải danh sách: ' + e.message, 'error');
                 }
-            },
-            onFilter: ({ keyword, deptId }) => {
-                const lowerKey = keyword.toLowerCase();
-                
-                // Lọc client-side trên danh sách gốc this.positions
-                const filtered = this.positions.filter(p => {
-                    // Điều kiện 1: Tên khớp từ khóa
-                    const matchName = p.title.toLowerCase().includes(lowerKey);
-                    // Điều kiện 2: ID Phòng ban khớp (nếu có chọn)
-                    // Lưu ý: p.department_id lấy từ API
-                    const matchDept = deptId ? (p.department_id === deptId) : true;
-                    
-                    return matchName && matchDept;
-                });
-
-                View.renderTable(filtered);
-            },
-            onReset: () => {
-                // Hiển thị lại toàn bộ danh sách gốc
-                View.renderTable(this.positions);
-                UI.toast('Đã làm mới danh sách', 'info');
             }
         });
+    document.addEventListener('submit', async (e) => {
+            // Kiểm tra đúng form Position
+            if (e.target && e.target.id === 'position-form') {
+                
+                // --- QUAN TRỌNG NHẤT: CHẶN RELOAD ---
+                e.preventDefault(); 
+                // ------------------------------------
+
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Gọi hàm xử lý logic lưu
+                await this.handleSave(data);
+            }
+        });
+    }
+
+    // Tách logic lưu ra hàm riêng cho gọn
+    async handleSave(formData) {
+        // 1. Validate
+        const payload = {
+            title: formData.title,
+            description: formData.description,
+            salary_base: parseFloat(formData.salaryBase),
+            departmentId: formData.departmentId
+        };
+
+        if (!payload.title.trim()) return UI.toast('Thiếu tên chức vụ', 'warning');
+        if (!payload.departmentId) return UI.toast('Thiếu phòng ban', 'warning');
+        if (isNaN(payload.salary_base) || payload.salary_base < 0) return UI.toast('Lương không hợp lệ', 'warning');
+
+        // 2. Call API
+        try {
+            UI.showLoading();
+            if (formData.id) {
+                await Service.updatePosition(formData.id, payload);
+                UI.toast('Cập nhật thành công', 'success');
+            } else {
+                await Service.createPosition(payload);
+                UI.toast('Thêm mới thành công', 'success');
+            }
+            
+            UI.closeModal();
+            await this.loadData();
+        } catch (e) {
+            UI.hideLoading();
+            UI.toast(e.message, 'error');
+        }
     }
 }
 

@@ -114,35 +114,57 @@ renderTable(positions) {
     }
 
     // 3. Modal Thêm / Sửa (Giữ nguyên)
-    showModal(data = null) {
+    showModal(data = null, departments = []) { 
         const isEdit = !!data;
         const title = isEdit ? 'Cập nhật Vị trí' : 'Thêm Vị trí mới';
         const btnText = isEdit ? 'Lưu thay đổi' : 'Tạo mới';
+
         const valTitle = data?.title || '';
-        const valSalary = data?.salary_base ? parseInt(data.salary_base) : ''; 
+        const valSalary = data?.salary_base ? parseInt(data.salary_base) : '';
         const valDesc = data?.description || '';
+        const valDeptId = data?.department_id || '';
+
+        // --- 2. ĐỊNH NGHĨA BIẾN deptOpts (Bị thiếu trước đó) ---
+        // Nếu không có dòng này, code sẽ báo lỗi "deptOpts is not defined"
+        const deptOpts = departments.map(d => 
+            `<option value="${d.id}" ${d.id == valDeptId ? 'selected' : ''}>${d.name}</option>`
+        ).join('');
 
         const html = `
             <form id="position-form">
                 <input type="hidden" name="id" value="${data?.id || ''}">
+                
                 <div class="form-group">
                     <label class="form-label">Tên chức vụ <span class="text-danger">*</span></label>
-                    <input type="text" name="title" class="form-control" value="${valTitle}" required>
+                    <input type="text" name="title" class="form-control" value="${valTitle}" required placeholder="Ví dụ: Trưởng phòng Marketing">
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Thuộc Phòng ban <span class="text-danger">*</span></label>
+                    <select name="departmentId" class="form-control" required>
+                        <option value="">-- Chọn Phòng ban --</option>
+                        ${deptOpts} </select>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">Lương cơ bản (VND) <span class="text-danger">*</span></label>
                     <input type="number" name="salaryBase" class="form-control" value="${valSalary}" required min="0" step="100000">
                 </div>
+
                 <div class="form-group">
                     <label class="form-label">Mô tả công việc</label>
                     <textarea name="description" class="form-control" rows="3">${valDesc}</textarea>
                 </div>
+                
+                <button type="submit" style="display:none;"></button>
             </form>
         `;
+
         const footer = `
-            <button class="btn btn-outline" onclick="UI.closeModal()">Hủy</button>
-            <button class="btn btn-primary" id="btn-save-pos">${btnText}</button>
+            <button type="button" class="btn btn-outline" onclick="UI.closeModal()">Hủy</button>
+            <button type="submit" form="position-form" class="btn btn-primary" id="btn-save-pos">${btnText}</button>
         `;
+
         UI.showModal(title, html, footer);
     }
 
@@ -231,10 +253,11 @@ renderTable(positions) {
 
     // 5. Bind Events
     bindEvents(handlers) {
+        // Sự kiện Thêm Mới
         const btnAdd = document.getElementById('btn-add-pos');
         if (btnAdd) btnAdd.addEventListener('click', handlers.onAdd);
 
-        // Search & Filter
+        // Sự kiện Tìm kiếm & Lọc
         const inputSearch = document.getElementById('search-pos');
         const selectDept = document.getElementById('filter-dept');
         const btnSearch = document.getElementById('btn-search');
@@ -248,7 +271,7 @@ renderTable(positions) {
 
         if (btnSearch) btnSearch.addEventListener('click', triggerFilter);
         if (inputSearch) inputSearch.addEventListener('keypress', (e) => { if (e.key === 'Enter') triggerFilter(); });
-        if (selectDept) selectDept.addEventListener('change', triggerFilter); // Lọc ngay khi chọn Dept
+        if (selectDept) selectDept.addEventListener('change', triggerFilter);
         
         if (btnReset) {
             btnReset.addEventListener('click', () => {
@@ -258,7 +281,7 @@ renderTable(positions) {
             });
         }
 
-        // Actions Table
+        // Sự kiện Click trên Bảng (Sửa, Xóa, Xem, Toggle Lương)
         const tbody = document.getElementById('position-table-body');
         if (tbody) {
             const newTbody = tbody.cloneNode(true);
@@ -273,7 +296,7 @@ renderTable(positions) {
                 else if (btn.classList.contains('btn-delete')) handlers.onDelete(id);
                 else if (btn.classList.contains('btn-view-emp')) handlers.onViewEmployees(id, btn.dataset.title);
                 else if (btn.classList.contains('toggle-salary-btn')) {
-                    // Toggle Lương bảng chính
+                    // Toggle Lương
                     const wrapper = btn.parentElement;
                     const textSpan = wrapper.querySelector('.salary-text');
                     const icon = btn.querySelector('i');
@@ -291,20 +314,24 @@ renderTable(positions) {
                 }
             });
         }
+    }
 
-        // Save Modal
-        const saveHandler = (e) => {
-            if (e.target && e.target.id === 'btn-save-pos') {
-                const form = document.getElementById('position-form');
-                if (form && form.checkValidity()) {
-                    const formData = new FormData(form);
-                    handlers.onSave(Object.fromEntries(formData.entries()));
-                } else if (form) form.reportValidity();
+    // 6. Bind Modal Save (Dành riêng cho Submit Form)
+    bindModalSave(handler) {
+        if (this._submitHandler) {
+            document.removeEventListener('submit', this._submitHandler);
+        }
+
+        this._submitHandler = (e) => {
+            if (e.target && e.target.id === 'position-form') {
+                e.preventDefault(); // Chặn reload trang
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                handler(data);
             }
         };
-        if (window._posSaveListener) document.removeEventListener('click', window._posSaveListener);
-        window._posSaveListener = saveHandler;
-        document.addEventListener('click', window._posSaveListener);
+
+        document.addEventListener('submit', this._submitHandler);
     }
 }
 
