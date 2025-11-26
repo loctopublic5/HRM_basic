@@ -1,44 +1,42 @@
+import { apiGet, apiPost, apiPut, apiDelete } from '../utils/apiHelper.js';
 
-import { apiGet, apiPost, apiPut, apiDelete } from '../helpers/apiHelper.js';
+class DepartmentService {
+    /**
+     * Lấy danh sách tất cả phòng ban
+     */
+    static async getAll() {
+        const response = await apiGet('departments');
+        // Đảm bảo luôn trả về mảng
+        return Array.isArray(response) ? response : (response.data || []);
+    }
 
-/**
- * Lấy danh sách tất cả phòng ban.
- * @returns {Promise<Array>}
- */
-export async function getDepartments() {
-    // Gọi API: GET /api.php?resource=departments
-    return await apiGet('departments');
+    static async getById(id) {
+        return await apiGet('departments', { id });
+    }
+
+    static async create(data) {
+        return await apiPost('departments', data);
+    }
+
+    static async update(id, data) {
+        return await apiPut('departments', id, data);
+    }
+
+    static async delete(id) {
+        return await apiDelete('departments', id);
+    }
+
+    /**
+     * Lấy danh sách nhân viên thuộc một phòng ban cụ thể
+     * Dùng cho tính năng "Xem Chi tiết"
+     * @param {string} deptId 
+     */
+    static async getEmployeesByDepartment(deptId) {
+        // Gọi API employees với tham số lọc deptId
+        // Backend EmployeeController đã hỗ trợ search theo deptId
+        const response = await apiGet('employees', { deptId: deptId });
+        return Array.isArray(response.data) ? response.data : [];
+    }
 }
 
-/**
- * Thêm phòng ban mới.
- * @param {string} name - Tên phòng ban
- */
-export async function createDepartment(name) {
-    return await apiPost('departments', { name });
-}
-
-/**
- * Cập nhật tên phòng ban.
- * @param {string} id 
- * @param {string} name 
- */
-export async function updateDepartment(id, name) {
-    return await apiPut('departments', id, { name });
-}
-
-/**
- * Xóa (mềm) phòng ban.
- * @param {string} id a
- */
-export async function deleteDepartment(id) {
-    return await apiDelete('departments', id);
-}
-
-/**
- * Lấy thông tin chi tiết 1 phòng ban (nếu cần cho trang chi tiết)
- * @param {string} id 
- */
-export async function getDepartmentById(id) {
-    return await apiGet('departments', { id });
-}
+export default DepartmentService;

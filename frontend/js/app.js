@@ -6,8 +6,7 @@ import UI from './utils/uiHelper.js';
 import AuthService from './services/authService.js';
 import AuthController from './controllers/authController.js';
 import AuthView from './views/authView.js';
-
-// Import Controllers
+import DepartmentController from './controllers/departmentController.js';
 import EmployeeController from './controllers/employeeController.js';
 
 // --- MODULE REGISTRY ---
@@ -15,7 +14,7 @@ import EmployeeController from './controllers/employeeController.js';
 const MODULE_REGISTRY = {
     'employeeManagement': EmployeeController,
     'dashboard': null, // Chưa implement
-    'departments': null,
+    'departments': DepartmentController,
     'positions': null
 };
 
