@@ -15,3 +15,9 @@ IDEA
 
 -Tính hiệu suất theo chu kỳ tháng
 -Tìm kiếm nhân viên theo từng option tìm kiếm( theo tên, tên + phòng ban, tên + phòng ban + vị trí)
+
+
+--- 26/11/2025---
+ISSUE:
+ - sau khi sửa nút hủy của thêm nhmodalân viên bây giờ nút sửa xóa không hoạt động
+ - nhú lưu của thêm sửa nhân viên đang bị tải lại trang thay vì lưu from và 

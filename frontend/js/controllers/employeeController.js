@@ -112,31 +112,17 @@ class EmployeeController {
             });
         }
 
-        document.addEventListener('click', (e) => {
-            // Kiểm tra nếu click vào nút Hủy (có class btn-outline trong modal hoặc id cụ thể)
-            // Giả định nút Hủy trong View có id="btn-cancel-employee" hoặc class tương tự
-            if (e.target.matches('#btn-cancel-employee') || e.target.closest('.btn-cancel')) {
-                e.preventDefault();
-                UI.closeModal();
-            }
-        });
+        // Action Table
+        View.bindTableActions(
+            (id) => this.handleEditClick(id),   // Edit
+            (id) => this.handleDeleteClick(id), // Delete
+            () => {}                            // Salary Toggle
+        );
 
-        // 2. Xử lý SUBMIT Form (Chặn Reload khi nhấn Enter)
-        document.addEventListener('submit', (e) => {
-            if (e.target && e.target.id === 'employee-form') {
-                // --- QUAN TRỌNG: CHẶN RELOAD ---
-                e.preventDefault();
-                // -------------------------------
+        // Submit Form
+        View.bindModalSave((data) => this.handleFormSubmit(data));
 
-                const formData = new FormData(e.target);
-                const data = Object.fromEntries(formData.entries());
-                
-                // Gọi hàm xử lý logic (đã có từ trước)
-                this.handleFormSubmit(data);
-            }
-        });
-
-        // Logic Dropdown phụ thuộc
+        // Logic Dropdown phụ thuộc trong Modal
         this.bindModalLogic();
     }
 

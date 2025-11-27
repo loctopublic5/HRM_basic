@@ -213,18 +213,11 @@ class EmployeeView {
         `;
 
         const footer = `
-            <button class="btn btn-outline" id="btn-cancel-employee">Hủy bỏ</button>
-            <button class="btn btn-primary" id="btn-save-employee">
-                <i class="fa-solid fa-floppy-disk"></i> ${btnText}
-            </button>
+            <button class="btn btn-outline" onclick="UI.closeModal()">Hủy</button>
+            <button class="btn btn-primary" id="btn-save-employee">${btnText}</button>
         `;
 
         UI.showModal(title, html, footer);
-        
-        const btnCancel = document.getElementById('btn-cancel-employee');
-        if (btnCancel) {
-            btnCancel.addEventListener('click', () => UI.closeModal());
-        }
     }
 
     // 5. HELPER UI METHODS
